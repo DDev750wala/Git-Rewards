@@ -2,9 +2,10 @@ import "@/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // import { TRPCReactProvider } from "@/trpc/react";
-import { ClerkProvider } from "@clerk/nextjs"
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -20,8 +21,9 @@ export default function RootLayout({
       <html lang="en" className={`${GeistSans.variable}`}>
         <body>
           {/* <TRPCReactProvider> */}
-            {children}
-            {/* </TRPCReactProvider> */}
+          {children}
+          <SpeedInsights />
+          {/* </TRPCReactProvider> */}
         </body>
       </html>
     </ClerkProvider>
