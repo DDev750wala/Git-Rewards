@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -10,10 +7,50 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+// User model
 model User {
-    id String @id @default(cuid())
-    emailAddress String @unique
-    firstName String
-    lastName String?
-    imageUrl String?
+    id             String       @id @default(cuid())
+    name           String
+    emailAddress   String       @unique
+    githubId       String       @unique // GitHub user ID
+    webhookUrl     String       @unique
+    depositedFunds Float
+    repositories   Repository[]
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+}
+
+model Repository {
+    id           String   @id @default(cuid())
+    name         String
+    githubRepoId String   @unique // GitHub repo ID
+    userId       String
+    user         User     @relation(fields: [userId], references: [id])
+    rewards      Reward[]
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+}
+
+model Contributor {
+    id        String   @id @default(cuid())
+    githubId  String   @unique // Contributor GitHub ID
+    username  String
+    rewards   Reward[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Reward {
+    id            String      @id @default(cuid())
+    contributorId String
+    contributor   Contributor @relation(fields: [contributorId], references: [id])
+    repositoryId  String
+    repository    Repository  @relation(fields: [repositoryId], references: [id])
+    prNumber      Int // GitHub Pull Request Number
+    amountUsd     Float // Amount in USD
+    amountEth     Float // ETH equivalent calculated at claim time
+    claimed       Boolean     @default(false)
+    claimedAt     DateTime?
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
 }

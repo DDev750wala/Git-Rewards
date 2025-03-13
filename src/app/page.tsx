@@ -1,17 +1,19 @@
-import Link from "next/link";
 
-// import { LatestPost } from "@/app/_components/post";
-// import { api, HydrateClient } from "@/trpc/server";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
+import { auth, currentUser } from '@clerk/nextjs/server'
+import Link from 'next/link'
 
 export default async function Home() {
-  // const hello = await api.post.hello({ text: "from tRPC" });
+    const { userId } = await auth()
+    const user = await currentUser()
 
-  // void api.post.getLatest.prefetch();
-
-  return (
-    // <HydrateClient>
-      <h1>Hello World</h1>
-    // </HydrateClient>
-  );
+    return (
+        <>
+            <h1 className='text-3xl font-bold underline'>{user?.fullName}</h1>
+            <h1></h1>
+            <Link href={'/temp'}>
+                <Button>Follow</Button>
+            </Link>
+        </>
+    )
 }
