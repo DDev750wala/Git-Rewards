@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+// import { NextApiRequest, NextApiResponse } from 'next';
 // import crypto from 'crypto';
 
 // const GITHUB_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET!;
@@ -53,12 +53,19 @@ import { NextApiRequest, NextApiResponse } from 'next';
 // }
 
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'POST') {
-        console.error(`Invalid method: ${req.method}`);
-        return res.status(405).json({ error: 'Method Not Allowed' });
+
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(req: NextRequest) {
+    const payload = await req.json();
+
+    // Verify the signature if needed
+    const githubEvent = req.headers.get('X-GitHub-Event');
+    
+    if (githubEvent === 'installation') {
+        console.log('Received installation event:', payload);
+        return NextResponse.json({ success: true });
     }
 
-    console.log('Webhook received:', req.body);
-    res.status(200).json({ success: true });
+    return NextResponse.json({ error: 'Unhandled event' }, { status: 400 });
 }
