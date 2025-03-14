@@ -11,6 +11,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const hmac = crypto.createHmac('sha256', GITHUB_WEBHOOK_SECRET).update(payload).digest('hex');
     const expectedSignature = `sha256=${hmac}`;
 
+    console.log('Received signature:', signature);
+    console.log('Expected signature:', expectedSignature);
+    console.log('Payload:', payload);
+    
+
     if (signature !== expectedSignature) {
         return res.status(401).json({ error: 'Invalid signature' });
     }
