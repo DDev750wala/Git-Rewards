@@ -1,15 +1,16 @@
-'use client';
+'use client'
 
-import Repositories from '@/components/Repositories';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
+import Repositories from '@/components/Repositories'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
+import Skeleton from 'react-loading-skeleton'
 
 export default function Home() {
-    const { isLoaded, isSignedIn, user } = useUser();
+    const { isLoaded, isSignedIn, user } = useUser()
 
     if (!isLoaded) {
-        return <div>Loading...</div>;
+        return <div>Loading...</div>
     }
 
     if (!isSignedIn) {
@@ -20,17 +21,18 @@ export default function Home() {
                     <Button variant="outline">Sign In</Button>
                 </Link>
             </div>
-        );
+        )
     }
 
     return (
         <>
-            <h1 className="text-3xl font-bold">{user?.username}</h1>
-            <Link href="/temp">
-                <Button>Hello World</Button>
-            </Link>
-            <div className="mt-4 p-2">Hello World 2</div>
-            <Repositories />
+            <h1 className="text-3xl font-bold">
+                {isLoaded ? `${user?.username}` : <Skeleton count={1} />}{' '}
+            </h1>
+            <Link href="/temp">Hello World</Link>
+            <div className="mt-4 p-2 w-fit">
+                {isLoaded ? <Repositories /> : <Skeleton count={1} />}
+            </div>
         </>
-    );
+    )
 }
