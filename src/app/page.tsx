@@ -10,7 +10,7 @@ export default function Home() {
     const { isLoaded, isSignedIn, user } = useUser()
 
     if (!isLoaded) {
-        return <div>Loading...</div>
+        return <Skeleton count={10}  />
     }
 
     if (!isSignedIn) {
