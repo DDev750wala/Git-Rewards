@@ -9,26 +9,26 @@ datasource db {
 
 // User model
 model User {
-    id             String       @id @default(cuid())
-    name           String
-    emailAddress   String       @unique
-    githubId       String      @unique // GitHub user ID
+    id           String       @id @default(cuid())
+    name         String
+    emailAddress String       @unique
+    githubId     String       @unique // GitHub user ID
     // webhookUrl     String       @unique
-    depositedFunds Float        @default(0) // total funds deposited by user in ETH
-    repositories   Repository[]
-    createdAt      DateTime     @default(now())
-    updatedAt      DateTime     @updatedAt
+    repositories Repository[]
+    createdAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
 }
 
 model Repository {
-    id           String   @id @default(cuid())
-    name         String
-    githubRepoId String   @unique // GitHub repo ID
-    userId       String
-    user         User     @relation(fields: [userId], references: [id])
-    rewards      Reward[]
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+    id             String   @id @default(cuid())
+    name           String
+    githubRepoId   String   @unique // GitHub repo ID
+    userId         String
+    user           User     @relation(fields: [userId], references: [id])
+    rewards        Reward[]
+    depositedFunds Float    @default(0) // total funds deposited by user in ETH
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
 }
 
 model Contributor {

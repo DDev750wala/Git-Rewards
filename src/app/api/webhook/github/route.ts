@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     switch (event) {
         case 'installation':
-            console.log('Received installation event:', payload);
+            console.log('Received installation event:', payload );
             break;
         case 'issues':
             await handleIssueEvent(payload);
