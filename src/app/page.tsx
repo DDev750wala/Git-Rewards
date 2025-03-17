@@ -10,7 +10,7 @@ export default function Home() {
     const { isLoaded, isSignedIn, user } = useUser()
 
     if (!isLoaded) {
-        return <Skeleton count={10}  />
+        return <Skeleton count={10} />
     }
 
     if (!isSignedIn) {
@@ -33,6 +33,7 @@ export default function Home() {
             <div className="mt-4 p-2 w-fit">
                 {isLoaded ? <Repositories /> : <Skeleton count={1} />}
             </div>
+            <Link href="/sign-out" className='m-10 text-blue-950'>Download our App</Link>
         </>
     )
 }
