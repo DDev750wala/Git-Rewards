@@ -1,46 +1,44 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { GithubInstallationApp } from '@/lib/interfaces';
 
 const GITHUB_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET!;
-
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
-    const signature = req.headers['x-hub-signature-256'] as string;
+ 
+export async function POST(req: NextRequest) {
+    const signature = req.headers.get('x-hub-signature-256') as string;
 
     // Verify the signature
-    const payload = JSON.stringify(req.body);
-    const hmac = crypto.createHmac('sha256', GITHUB_WEBHOOK_SECRET).update(payload).digest('hex');
+    const payload = await req.json(); // Use `await req.json()` for App Router
+    const hmac = crypto.createHmac('sha256', GITHUB_WEBHOOK_SECRET).update(JSON.stringify(payload)).digest('hex');
     const expectedSignature = `sha256=${hmac}`;
 
     console.log('Received signature:', signature);
     console.log('Expected signature:', expectedSignature);
     console.log('Payload:', payload);
-    
 
     if (signature !== expectedSignature) {
-        return res.status(401).json({ error: 'Invalid signature' });
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    const event = req.headers['x-github-event'];
-    
+    const event = req.headers.get('x-github-event');
+
     switch (event) {
         case 'installation':
-            console.log('Received installation event:', req.body);
+            console.log('Received installation event:', payload);
             break;
         case 'issues':
-            await handleIssueEvent(req.body);
+            await handleIssueEvent(payload);
             break;
         case 'pull_request':
-            await handlePullRequestEvent(req.body);
+            await handlePullRequestEvent(payload);
             break;
         case 'issue_comment':
-            await handleIssueCommentEvent(req.body);
+            await handleIssueCommentEvent(payload);
             break;
         default:
             console.log(`Unhandled event: ${event}`);
     }
 
-    res.status(200).json({ success: true });
+    return NextResponse.json({ success: true });
 }
 
 // Example Handlers
@@ -55,6 +53,7 @@ async function handlePullRequestEvent(payload: any) {
 async function handleIssueCommentEvent(payload: any) {
     console.log('Issue Comment Event:', payload);
 }
+
 
 
 
