@@ -25,7 +25,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     
     switch (event) {
         case 'installation':
-            console.log('Received installation event:', req.body as GithubInstallationApp);
+            console.log('Received installation event:', req.body);
             break;
         case 'issues':
             await handleIssueEvent(req.body);

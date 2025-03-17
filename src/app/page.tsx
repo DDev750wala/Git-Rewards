@@ -33,7 +33,7 @@ export default function Home() {
             <div className="mt-4 p-2 w-fit">
                 {isLoaded ? <Repositories /> : <Skeleton count={1} />}
             </div>
-            <Link href="/sign-out" className='m-10 text-blue-950'>Download our App</Link>
+            <Link href="https://github.com/apps/contriflow" className='m-10 text-blue-950'>Download our App</Link>
         </>
     )
 }
