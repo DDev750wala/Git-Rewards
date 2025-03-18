@@ -9,14 +9,14 @@ datasource db {
 
 // User model
 model User {
-    id           String       @id @default(cuid())
-    name         String
-    emailAddress String       @unique
-    githubId     String       @unique // GitHub user ID
-    // webhookUrl     String       @unique
-    repositories Repository[]
-    createdAt    DateTime     @default(now())
-    updatedAt    DateTime     @updatedAt
+    id            String       @id @default(cuid())
+    name          String
+    emailAddress  String       @unique
+    githubId      String       @unique // GitHub user ID
+    repositories  Repository[]
+    walletAddress String?      @unique
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
 }
 
 model Repository {
@@ -32,12 +32,13 @@ model Repository {
 }
 
 model Contributor {
-    id        String   @id @default(cuid())
-    githubId  String   @unique // Contributor GitHub ID
-    username  String
-    rewards   Reward[]
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id            String   @id @default(cuid())
+    githubId      String   @unique // Contributor GitHub ID
+    username      String
+    walletAddress String?  @unique
+    rewards       Reward[]
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 }
 
 model Reward {
