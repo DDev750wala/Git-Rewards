@@ -36,10 +36,11 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
         }
     } else if (payload.action === 'deleted') {
         try {
-            console.log('Received installation event:', payload)
+
+            console.log("sender.login during deleting", payload.sender.login.toLowerCase());
 
             const user = await db.user.findUnique({
-                where: { githubId: payload.sender.login },
+                where: { githubId: payload.sender.login.toLowerCase() },
             })
             console.log('This is the user  from database: ', user)
             if (!user) {
