@@ -7,7 +7,7 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
             console.log('Received installation event:', payload)
 
             const user = await db.user.findUnique({
-                where: { githubId: payload.sender.login },
+                where: { githubId: payload.sender.login.toLowerCase() },
             })
 
             if (!user) {
@@ -18,7 +18,7 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
                 return {
                     name: repo.name,
                     githubRepoId: repo.id.toString(),
-                    userId: user.id,
+                    userId: user.id.toLowerCase(),
                 }
             })
 
