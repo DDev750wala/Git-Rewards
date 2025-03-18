@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { handleNewInstallation } from '@/lib/controllers';
 
 const GITHUB_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET!;
  
@@ -23,7 +24,12 @@ export async function POST(req: NextRequest) {
 
     switch (event) {
         case 'installation':
-            console.log('Received installation event:', payload );
+            const res = await handleNewInstallation(payload)
+            if(res) {
+                return NextResponse.json({ success: true });
+            } else {
+                return NextResponse.json({ error: 'Error handling installation event' }, { status: 500 });
+            }
             break;
         case 'issues':
             await handleIssueEvent(payload);
