@@ -10,8 +10,7 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
                 where: { githubId: payload.sender.login.toLowerCase() },
             })
 
-            console.log("This is the user  from database: ", user);
-            
+            console.log('This is the user  from database: ', user)
 
             if (!user) {
                 throw new Error('User not found')
@@ -34,22 +33,22 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
             console.log('Error handling installation event:', e)
             return false
         }
-    } else if(payload.action === 'deleted') {
+    } else if (payload.action === 'deleted') {
         try {
             console.log('Received installation event:', payload)
 
             const user = await db.user.findUnique({
                 where: { githubId: payload.sender.login },
             })
-
+            console.log('This is the user  from database: ', user)
             if (!user) {
                 throw new Error('User not found')
             }
 
             await db.repository.deleteMany({
                 where: {
-                    userId: user.id
-                }
+                    userId: user.id,
+                },
             })
 
             return true
@@ -59,5 +58,3 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
         }
     }
 }
-
-
