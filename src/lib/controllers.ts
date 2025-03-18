@@ -10,6 +10,9 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
                 where: { githubId: payload.sender.login.toLowerCase() },
             })
 
+            console.log("This is the user  from database: ", user);
+            
+
             if (!user) {
                 throw new Error('User not found')
             }
@@ -18,7 +21,7 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
                 return {
                     name: repo.name,
                     githubRepoId: repo.id.toString(),
-                    userId: user.id.toLowerCase(),
+                    userId: user.id,
                 }
             })
 
