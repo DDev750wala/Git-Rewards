@@ -4,8 +4,9 @@ import { GithubInstallationApp } from './interfaces'
 export async function handleNewInstallation(payload: GithubInstallationApp) {
     if (payload.action === 'created') {
         try {
-            console.log('Received installation event:', payload)
 
+            console.log("sender.login", payload.sender.login.toLowerCase());
+            
             const user = await db.user.findUnique({
                 where: { githubId: payload.sender.login.toLowerCase() },
             })
