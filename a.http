@@ -19,21 +19,21 @@
 # }
 
 
-POST http://localhost:3000/api/chain/getRepoAmount
-Content-Type: application/json
-
-{
-    "address" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
-    "repoName" : "test"
-}
-
-
-
-# POST http://localhost:3000/api/chain/addAmount
+# POST http://localhost:3000/api/chain/getRepoAmount
 # Content-Type: application/json
 
 # {
-#     "user" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
-#     "amount" : "10000000000000000000",
+#     "address" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
 #     "repoName" : "test"
 # }
+
+
+
+POST http://localhost:3000/api/chain/addAmount
+Content-Type: application/json
+
+{
+    "user" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
+    "amount" : "10000000000000000000",
+    "repoName" : "test"
+}
