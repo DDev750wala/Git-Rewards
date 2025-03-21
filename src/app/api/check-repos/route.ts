@@ -9,7 +9,7 @@ export const GET = async () => {
     const user = await currentUser()
 
     if(!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 401 })
+        return NextResponse.json({ message: 'User not found' }, { status: 401 })
     }
 
     try {
