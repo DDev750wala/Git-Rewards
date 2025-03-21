@@ -2,7 +2,7 @@
 
 import React, { useState, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check } from "lucide-react"; // For checkmark icons
+import { Check } from "lucide-react"; 
 
 type StepperProps = {
   children: ReactNode[];
@@ -116,7 +116,7 @@ export default function Stepper({
 function StepContentWrapper({ isCompleted, currentStep, direction, children }: StepProps & { isCompleted: boolean; currentStep: number; direction: number }) {
   return (
     <motion.div
-      className="relative overflow-hidden w-full max-w-md p-4 bg-black rounded-lg shadow-lg text-white text-2xl"
+      className="relative overflow-hidden w-full max-w-md p-4 bg-black rounded-lg shadow-lg text-white text-"
       animate={{ opacity: isCompleted ? 0 : 1 }}
     >
       <AnimatePresence initial={false} mode="sync" custom={direction}>
