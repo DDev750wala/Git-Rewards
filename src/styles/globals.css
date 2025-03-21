@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Anta&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:wght@400;700&display=swap');
+
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
@@ -121,4 +124,29 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  display: inline-block;
+  width: 5px;
+  animation: blink 1s infinite;
+}
+
+.titlefont
+{
+  font-family: 'Anta', sans-serif;
+}
+
+.dashboardfont{
+  font-family: 'Newsreader', sans-serif;
+
 }
