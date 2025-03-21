@@ -2,6 +2,7 @@ import { db } from '@/server/db'
 import { GithubInstallationApp, IssueComment } from './interfaces'
 import jwt from 'jsonwebtoken'
 import axios from 'axios'
+import fs from 'fs'
 
 export async function handleNewInstallation(payload: GithubInstallationApp) {
     if (payload.action === 'created') {
@@ -146,7 +147,11 @@ export async function handleIssueCommentEvent(payload: IssueComment) {
 
 export async function getInstallationToken(installationId: number) {
     const GITHUB_APP_ID = process.env.GITHUB_APP_ID!
-    const GITHUB_PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!.replace(/\\n/g, '\n');
+
+    // const GITHUB_PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!.replace(/\\n/g, '\n');
+    const GITHUB_PRIVATE_KEY = fs.readFileSync('../KEY/contriflow.2025-03-20.private-key.pem', 'utf8')
+    console.log('GITHUB_PRIVATE_KEY:', GITHUB_PRIVATE_KEY);
+    
 
 
     const payload = {
