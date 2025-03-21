@@ -146,10 +146,7 @@ export async function handleIssueCommentEvent(payload: IssueComment) {
 
 export async function getInstallationToken(installationId: number) {
     const GITHUB_APP_ID = process.env.GITHUB_APP_ID!
-    const GITHUB_PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!.replace(
-        /\\n/g,
-        '\n'
-    )
+    const GITHUB_PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!
 
     const payload = {
         iat: Math.floor(Date.now() / 1000) - 60, // issued 1 min ago
