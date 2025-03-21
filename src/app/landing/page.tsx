@@ -17,6 +17,12 @@ declare global {
     }
 }
 
+declare global {
+    interface Window {
+        ethereum?: any
+    }
+}
+
 interface Repo {
     id: number
     name: string
@@ -27,7 +33,7 @@ interface Repo {
     timestamp: string
 }
 
-export default async function Dashboard() {
+export default function Dashboard() {
     const { isLoaded, isSignedIn, user } = useUser()
     const [repos, setRepos] = useState<Repo[]>([])
     const [walletAddress, setWalletAddress] = useState<string | null>(null)
@@ -132,7 +138,16 @@ export default async function Dashboard() {
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
             <h1 className="text-3xl font-bold mb-6">
-                <BlurText text="Dashboard" delay={100} animateBy="words" direction="top" className="text-6xl mb-8" />
+                <BlurText 
+                    text="Dashboard" 
+                    delay={100} 
+                    animateBy="words" 
+                    direction="top" 
+                    className="text-6xl mb-8" 
+                    animationFrom="opacity-0" 
+                    animationTo="opacity-100" 
+                    onAnimationComplete={() => console.log('Animation completed')} 
+                />
             </h1>
 
             <button onClick={connectWallet} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
