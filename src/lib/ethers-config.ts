@@ -7,7 +7,7 @@ declare global {
 import { Contract, ethers } from 'ethers'
 
 // Replace with your contract's address from Remix
-const CONTRACT_ADDRESS = '0x0F5CE25F21a4DbB16fae7601ECD9E1b74fD5AD0E'
+const CONTRACT_ADDRESS = '0x75f8312aEB6157cb283Ca79Ca1Bf752F347cFDC7'
 
 // Replace with your contract's ABI from Remix
 const CONTRACT_ABI = [
