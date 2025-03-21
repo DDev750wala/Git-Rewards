@@ -62,7 +62,7 @@ export async function handleNewInstallation(payload: GithubInstallationApp) {
     }
 }
 
-export async function handleIssueCommentEvent(payload: IssueComment) {
+export async function handleIssueCommentEvent(payload: IssueComment) {  
     try {
         console.log('Issue Comment Event:', payload)
 
@@ -120,6 +120,7 @@ export async function handleIssueCommentEvent(payload: IssueComment) {
                 },
             });
 
+            return true;
         } else {
             throw new Error('No valid reward format found in comment')
         }

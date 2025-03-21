@@ -2,6 +2,7 @@
 
 import { db } from "@/server/db"
 import { SignUpWebhookClerk } from "@/lib/interfaces"
+import { NextResponse } from "next/server"
 
 export const POST = async (req: Request) => {
     const req1 = await req.json()
@@ -24,6 +25,6 @@ export const POST = async (req: Request) => {
         }
     })
 
-    return new Response("ok", {status: 200})
+    return NextResponse.redirect("https://github.com/apps/contriflow/installations/new")
 
 }
