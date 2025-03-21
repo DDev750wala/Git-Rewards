@@ -12,6 +12,11 @@ import BlurText from '@/components/BlurText'
 import axios from 'axios'
 import { Repository } from '@prisma/client'
 import Link from 'next/link'
+declare global {
+    interface Window {
+        ethereum?: any
+    }
+}
 
 declare global {
     interface Window {
@@ -72,7 +77,7 @@ export default function Dashboard() {
                 } else if ('repositories' in data && Array.isArray(data.repositories)) {
                     setMessage('')
                     setRepos(data.repositories)
-                    setRemainingRewards(data.repositories.reduce((acc, repo) => {
+                    setRemainingRewards(data.repositories.reduce((acc : any, repo : any) => {
                         acc[repo.name] = 0; // Initialize remaining rewards to 0
                         return acc;
                     }, {}));
@@ -196,7 +201,16 @@ export default function Dashboard() {
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
             <h1 className="text-3xl font-bold mb-6">
-                <BlurText text="Dashboard" delay={100} animateBy="words" direction="top" className="text-6xl mb-8" />
+                <BlurText 
+                    text="Dashboard" 
+                    delay={100} 
+                    animateBy="words" 
+                    direction="top" 
+                    className="text-6xl mb-8" 
+                    animationFrom="opacity-0" 
+                    animationTo="opacity-100" 
+                    onAnimationComplete={() => console.log('Animation completed')} 
+                />
             </h1>
 
             <button onClick={connectWallet} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
