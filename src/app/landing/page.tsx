@@ -10,6 +10,11 @@ import { BsDot } from 'react-icons/bs'
 import StarBorder from '@/components/starborder'
 import BlurText from '@/components/BlurText'
 import axios from 'axios';
+declare global {
+    interface Window {
+        ethereum?: any
+    }
+}
 
 declare global {
     interface Window {
@@ -45,30 +50,15 @@ export default function Dashboard() {
                 const data = await response.data;
                 console.log(data)
                 return data
-                
+
             }
             const data = await getData()
+            console.log(data)
             const storedAddress = Cookies.get('walletAddress')
             if (storedAddress) setWalletAddress(storedAddress)
 
 
-                // const mockRepos = Array.from({ length: 15 }, (_, i) => ({
-                //     id: i + 1,
-                //     name: `repo${i + 1}`,
-                //     html_url: `https://github.com/user/repo${i + 1}`,
-                //     stargazers_count: Math.floor(Math.random() * 100),
-                //     branch: 'main',
-                //     commit: Math.random().toString(36).substring(2, 8),
-                //     timestamp: `${Math.floor(Math.random() * 10) + 1}d ago`,
-                // }))
                 setRepos(data)
-
-                // const mockRemainingRewards = mockRepos.reduce((acc, repo) => {
-                //     acc[repo.name] = Math.floor(Math.random() * 10) + 1 // Assign random ETH values
-                //     return acc
-                // }, {} as { [key: string]: number })
-
-                // setRemainingRewards(mockRemainingRewards)
                 setLoading(false)
         }
 
@@ -147,7 +137,16 @@ export default function Dashboard() {
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
             <h1 className="text-3xl font-bold mb-6">
-                <BlurText text="Dashboard" delay={100} animateBy="words" direction="top" className="text-6xl mb-8" />
+                <BlurText 
+                    text="Dashboard" 
+                    delay={100} 
+                    animateBy="words" 
+                    direction="top" 
+                    className="text-6xl mb-8" 
+                    animationFrom="opacity-0" 
+                    animationTo="opacity-100" 
+                    onAnimationComplete={() => console.log('Animation completed')} 
+                />
             </h1>
 
             <button onClick={connectWallet} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
