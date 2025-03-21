@@ -9,6 +9,7 @@ import { FaRegClock } from 'react-icons/fa'
 import { BsDot } from 'react-icons/bs'
 import StarBorder from '@/components/starborder'
 import BlurText from '@/components/BlurText'
+import axios from 'axios';
 
 declare global {
     interface Window {
@@ -38,29 +39,40 @@ export default function Dashboard() {
     const [remainingRewards, setRemainingRewards] = useState<{ [key: string]: number }>({})
 
     useEffect(() => {
-        const storedAddress = Cookies.get('walletAddress')
-        if (storedAddress) setWalletAddress(storedAddress)
+        const fetchData = async () => {
+            async function getData() {
+                const response = await axios.get('/api/check-repos')
+                const data = await response.data;
+                console.log(data)
+                return data
+                
+            }
+            const data = await getData()
+            const storedAddress = Cookies.get('walletAddress')
+            if (storedAddress) setWalletAddress(storedAddress)
 
-        setTimeout(() => {
-            const mockRepos = Array.from({ length: 15 }, (_, i) => ({
-                id: i + 1,
-                name: `repo${i + 1}`,
-                html_url: `https://github.com/user/repo${i + 1}`,
-                stargazers_count: Math.floor(Math.random() * 100),
-                branch: 'main',
-                commit: Math.random().toString(36).substring(2, 8),
-                timestamp: `${Math.floor(Math.random() * 10) + 1}d ago`,
-            }))
-            setRepos(mockRepos)
 
-            const mockRemainingRewards = mockRepos.reduce((acc, repo) => {
-                acc[repo.name] = Math.floor(Math.random() * 10) + 1 // Assign random ETH values
-                return acc
-            }, {} as { [key: string]: number })
+                // const mockRepos = Array.from({ length: 15 }, (_, i) => ({
+                //     id: i + 1,
+                //     name: `repo${i + 1}`,
+                //     html_url: `https://github.com/user/repo${i + 1}`,
+                //     stargazers_count: Math.floor(Math.random() * 100),
+                //     branch: 'main',
+                //     commit: Math.random().toString(36).substring(2, 8),
+                //     timestamp: `${Math.floor(Math.random() * 10) + 1}d ago`,
+                // }))
+                setRepos(data)
 
-            setRemainingRewards(mockRemainingRewards)
-            setLoading(false)
-        }, 1000)
+                // const mockRemainingRewards = mockRepos.reduce((acc, repo) => {
+                //     acc[repo.name] = Math.floor(Math.random() * 10) + 1 // Assign random ETH values
+                //     return acc
+                // }, {} as { [key: string]: number })
+
+                // setRemainingRewards(mockRemainingRewards)
+                setLoading(false)
+        }
+
+        fetchData()
     }, [])
 
     const connectWallet = async () => {
@@ -114,7 +126,7 @@ export default function Dashboard() {
         if (selectedRepo && remainingRewards[selectedRepo] !== undefined) {
             setRemainingRewards((prev) => ({
                 ...prev,
-                [selectedRepo]: Math.max(0, prev[selectedRepo] - Number(rewardInput)), // Deduct from remaining funds
+                [selectedRepo]: Math.max(0, prev[selectedRepo]! - Number(rewardInput)), // Deduct from remaining funds
             }))
         }
         alert(`Reward of ${rewardInput} ETH set for ${selectedRepo}`)

@@ -1,0 +1,39 @@
+# POST http://localhost:3000/api/chain/sendReward
+# Content-Type: application/json
+
+# {
+#     "user" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
+#     "reciptent":"0x1f1061f6ad2A26d27D7aF21dD4e7B2A0764b47BF",
+#     "amount" : "1000000000000000000",
+#     "repoName" : "test"
+# }
+
+# POST http://localhost:3000/api/chain/removeAmount
+# Content-Type: application/json
+
+# {
+#     "user" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
+#     "reciptent":"0x1f1061f6ad2A26d27D7aF21dD4e7B2A0764b47BF",
+#     "amount" : "1000000000000000000",
+#     "repoName" : "test"
+# }
+
+
+POST http://localhost:3000/api/chain/getRepoAmount
+Content-Type: application/json
+
+{
+    "address" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
+    "repoName" : "test"
+}
+
+
+
+# POST http://localhost:3000/api/chain/addAmount
+# Content-Type: application/json
+
+# {
+#     "user" : "0x1Ff4804FbF640bCaA9F782a0c734a414874b87A6",
+#     "amount" : "10000000000000000000",
+#     "repoName" : "test"
+# }
