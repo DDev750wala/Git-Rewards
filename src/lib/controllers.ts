@@ -148,13 +148,15 @@ export async function getInstallationToken(installationId: number) {
     const GITHUB_APP_ID = process.env.GITHUB_APP_ID!
     const GITHUB_PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!
 
+    const GITHUB_PRIVATE_KEY_FINAL = `-----BEGIN RSA PRIVATE KEY-----\n${GITHUB_PRIVATE_KEY}\n-----END RSA PRIVATE KEY-----`;
+
     const payload = {
         iat: Math.floor(Date.now() / 1000) - 60, // issued 1 min ago
         exp: Math.floor(Date.now() / 1000) + 10 * 60, // expires in 10 mins
         iss: GITHUB_APP_ID,
     }
 
-    const jwtToken = jwt.sign(payload, GITHUB_PRIVATE_KEY, {
+    const jwtToken = jwt.sign(payload, GITHUB_PRIVATE_KEY_FINAL, {
         algorithm: 'RS256',
     })
 
