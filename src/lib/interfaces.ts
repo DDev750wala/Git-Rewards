@@ -354,3 +354,27 @@ export interface HTTPRequest {
     client_ip:  string;
     user_agent: string;
 }
+ //------------------------------------------------------Contract
+
+ export interface ContractFunctions {
+    addAmount: (_user: string, _repoName: string, overrides?: { value: bigint }) => Promise<void>;
+    removeAmount: (_user: string, _repoName: string, amount: bigint, overrides?: { value: bigint }) => Promise<void>;
+    sendReward: (_user: string, recipient: string, amount: bigint, _repoName: string, overrides?: { value: bigint }) => Promise<void>;
+    withdraw: () => Promise<void>;
+    getRepoAmount: (_addr: string, _repoName: string) => Promise<bigint>;
+    userRepoRewards: (_addr: string, _repoName: string) => Promise<bigint>;
+  }
+  
+  export interface ContractEvents {
+    AmountAdded: (user: string, repoName: string, amount: bigint) => void;
+    AmountRemoved: (user: string, repoName: string, amount: bigint) => void;
+    RewardSent: (user: string, recipient: string, amount: bigint, repoName: string) => void;
+  }
+  
+  export interface ContractErrors {
+    InsufficientBalance: () => void;
+    InvalidRecipient: () => void;
+    InvalidUser: () => void;
+    TransferFailed: () => void;
+  }
+  

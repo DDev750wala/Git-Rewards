@@ -25,11 +25,59 @@ interface Repo {
     timestamp: string
 }
 
+function LeetCodeCoinAnimation() {
+    return (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+            {/* Glowing outer ring */}
+            <div className="relative w-32 h-32">
+                <div className="absolute inset-0 animate-ping bg-yellow-400 rounded-full opacity-30"></div>
+
+                {/* Coin with 3D effect */}
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="w-full h-full border-4 border-yellow-400 rounded-full animate-bounce flex items-center justify-center bg-gradient-to-br from-yellow-300 to-yellow-500 shadow-lg">
+                        <img
+                            src="/goldcoin.png"
+                            alt="Gold Coin"
+                            className="w-20 h-20 object-contain"
+                        />
+                    </div>
+
+
+                </div>
+            </div>
+
+            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">Reward Processing...</p>
+
+            {/* Tailwind Animation Styles */}
+            <style jsx>{`
+                @keyframes fade-in {
+                    0% { opacity: 0; }
+                    100% { opacity: 1; }
+                }
+                .animate-fade-in {
+                    animation: fade-in 0.5s ease-in-out;
+                }
+
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(100%); }
+                }
+                .animate-shimmer {
+                    animation: shimmer 2s linear infinite;
+                }
+            `}</style>
+        </div>
+    );
+}
+
 export default function Claim() {
     const { isLoaded, isSignedIn } = useUser()
     const [repos, setRepos] = useState<Repo[]>([])
     const [walletAddress, setWalletAddress] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
+    const [isClaiming, setIsClaiming] = useState(false);
+    const [claimedRepo, setClaimedRepo] = useState<string | null>(null);
+    const [claimedRepos, setClaimedRepos] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         setTimeout(() => {
@@ -68,9 +116,17 @@ export default function Claim() {
     // Function to handle claim reward
     async function handleClaimReward(repoName: string) {
         if (!walletAddress) {
-            await connectWallet()
+            await connectWallet();
         } else {
-            alert(`Reward claimed for ${repoName}`)
+            setIsClaiming(true);
+            setClaimedRepo(repoName);
+            setTimeout(() => {
+                setIsClaiming(false);
+                setClaimedRepos((prev) => ({ ...prev, [repoName]: true })); // Mark repo as claimed
+                setTimeout(() => {
+                    setClaimedRepo(null);
+                }, 2000); // Hide the message after 2 seconds
+            }, 3000); // Simulates animation duration
         }
     }
 
@@ -96,6 +152,13 @@ export default function Claim() {
                 />
             </h1>
 
+            {isClaiming && <LeetCodeCoinAnimation />}
+            {claimedRepo && !isClaiming && (
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                    <p className="text-xl text-white font-bold">Reward claimed for <span className="text-yellow-400">{claimedRepo}</span></p>
+                </div>
+            )}
+
             <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
                 <h1 className="text-2xl p-3 text-bold-500">My Repos</h1>
                 <div className="w-full mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
@@ -112,12 +175,15 @@ export default function Claim() {
                                         </a>
                                         <div className="text-sm text-gray-400">Branch: {repo.branch} • Commit: {repo.commit}</div>
                                     </div>
-                                    <div className="text-sm text-gray-400 flex items-center">
+                                    <div className="text-sm text-white flex items-center">
                                         <button
                                             onClick={() => handleClaimReward(repo.name)}
-                                            className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all"
+                                            className={`px-4 py-2 font-semibold rounded-lg transition-all ${
+                                                claimedRepos[repo.name] ? 'bg-transparent text-red-600 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+                                            }`}
+                                            disabled={claimedRepos[repo.name]}
                                         >
-                                            Claim Reward
+                                            {claimedRepos[repo.name] ? "Claimed " : 'Claim Reward'}
                                         </button>
                                     </div>
                                 </div>
