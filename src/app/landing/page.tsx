@@ -12,6 +12,7 @@ import BlurText from '@/components/BlurText'
 import axios from 'axios'
 import { Repository } from '@prisma/client'
 import Link from 'next/link'
+import { set } from 'zod'
 declare global {
     interface Window {
         ethereum?: any
@@ -35,10 +36,50 @@ export default function Dashboard() {
     const [connectingWallet, setConnectingWallet] = useState(false)
     const [message, setMessage] = useState('')
     const [statusCode, setStatusCode] = useState(0)
+    const [popRepo, setPopRepo] = useState<string>("")
+    const [popRepoId, setPopRepoId] = useState<string>("")
     const [githubUsername, setGithubUsername] = useState<string | null>(null)
     const [remainingRewards, setRemainingRewards] = useState<{
         [key: string]: number
     }>({})
+
+    const fetchData = async () => {
+        try {
+            const response = await axios.get('/api/check-repos')
+            const data = response.data
+            console.log(data)
+            setStatusCode(response.status)
+
+            if ('message' in data) {
+                console.log(data.message)
+                setMessage(data.message)
+                setRepos([])
+            } else if (Array.isArray(data)) {
+                setMessage('')
+                setRepos(data)
+                console.log("repo data added")
+                setRemainingRewards(data.reduce(async (acc, repo) => {
+                    acc[repo.name] = Number(repo.depositedFunds) / 10 ** 18; 
+                    return acc;
+                }, {}));
+            } else if ('repositories' in data && Array.isArray(data.repositories)) {
+                setMessage('')
+                setRepos(data.repositories)
+                setRemainingRewards(data.repositories.reduce((acc : any, repo : any) => {
+                    acc[repo.name] = repo.depositedFunds / 10 ** 18; // Initialize remaining rewards to 0
+                    return acc;
+                }, {}));
+            } else {
+                console.error('Unexpected data format:', data)
+                setRepos([])
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error)
+            setRepos([])
+        } finally {
+            setLoading(false)
+        }
+    };
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -56,46 +97,34 @@ export default function Dashboard() {
             }
         }
 
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('/api/check-repos')
-                const data = response.data
-                console.log(data)
-                setStatusCode(response.status)
-
-                if ('message' in data) {
-                    console.log(data.message)
-                    setMessage(data.message)
-                    setRepos([])
-                } else if (Array.isArray(data)) {
-                    setMessage('')
-                    setRepos(data)
-                    setRemainingRewards(data.reduce((acc, repo) => {
-                        acc[repo.name] = 0; // Initialize remaining rewards to 0
-                        return acc;
-                    }, {}));
-                } else if ('repositories' in data && Array.isArray(data.repositories)) {
-                    setMessage('')
-                    setRepos(data.repositories)
-                    setRemainingRewards(data.repositories.reduce((acc : any, repo : any) => {
-                        acc[repo.name] = 0; // Initialize remaining rewards to 0
-                        return acc;
-                    }, {}));
-                } else {
-                    console.error('Unexpected data format:', data)
-                    setRepos([])
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error)
-                setRepos([])
-            } finally {
-                setLoading(false)
-            }
-        }
+        
 
         fetchUser()
         fetchData()
     }, [isLoaded, isSignedIn, user])
+
+    const addAmount = async (repoName: string, amount: number) => {
+        try {
+            await axios.post('/api/dataBase/addAmountToRepo', {
+                repoId : popRepoId,
+                amount : amount * 10 ** 18,
+            })
+
+            // alert(`/api/chain/addAmount ', ${repoName} , ' ', ${amount}`)
+            // await axios.post('/api/chain/addAmount', {
+            //     user : githubUsername,
+            //     repoName : repoName,
+            //     amount : amount * 10 ** 18,
+            // })
+            
+            fetchData()
+            
+        } catch (error) {
+            console.error('Error adding amount:', error)
+        }
+
+        // add in db
+    }
 
     const connectWallet = async () => {
         if (!window.ethereum) {
@@ -132,7 +161,9 @@ export default function Dashboard() {
         }
     }
 
-    const handleSetReward = async (repoName: string) => {
+    const handleSetReward = async (repoName: string,repoId : string) => {
+        setPopRepo(repoName)
+        setPopRepoId(repoId)
         let address = walletAddress
         if (!walletAddress) {
             address = await connectWallet()
@@ -157,6 +188,7 @@ export default function Dashboard() {
         alert(`Reward of ${rewardInput} ETH set for ${selectedRepo}`)
         setShowPopup(false)
         setRewardInput('')
+        addAmount(selectedRepo!, Number(rewardInput))
     }
 
     if (!isLoaded) return <Skeleton count={10} className="bg-black" />
@@ -165,6 +197,7 @@ export default function Dashboard() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
+                {/* redirect to sign-up */}
             </div>
         )
     }
@@ -249,7 +282,7 @@ export default function Dashboard() {
                                         color="cyan"
                                         speed="3s"
                                         onClick={() =>
-                                            handleSetReward(repo.name)
+                                            handleSetReward(repo.name , repo.id)
                                         }
                                     >
                                         Set Reward
@@ -279,7 +312,7 @@ export default function Dashboard() {
                             />
                             <div className="flex justify-end mt-6 gap-3">
                                 <button
-                                    onClick={() => setShowPopup(false)}
+                                    onClick={() => handleConfirmReward()}
                                     className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
                                 >
                                     Cancel
