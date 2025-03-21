@@ -34,7 +34,7 @@ model Repository {
 model Contributor {
     id            String   @id @default(cuid())
     githubId      String   @unique // Contributor GitHub ID
-    username      String
+    username      String   @unique
     walletAddress String?  @unique
     rewards       Reward[]
     createdAt     DateTime @default(now())

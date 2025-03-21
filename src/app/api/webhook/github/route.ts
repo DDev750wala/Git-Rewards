@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { handleNewInstallation } from '@/lib/controllers';
+import { handleNewInstallation, handleIssueCommentEvent } from '@/lib/controllers';
 
 const GITHUB_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET!;
  
@@ -31,12 +31,9 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: 'Error handling installation event' }, { status: 500 });
             }
             break;
-        case 'issues':
-            await handleIssueEvent(payload);
-            break;
-        case 'pull_request':
-            await handlePullRequestEvent(payload);
-            break;
+        // case 'issues':
+        //     await handleIssueEvent(payload);
+        //     break;
         case 'issue_comment':
             await handleIssueCommentEvent(payload);
             break;
@@ -47,18 +44,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
 }
 
-// Example Handlers
-async function handleIssueEvent(payload: any) {
-    console.log('Issue Event:', payload);
-}
+// async function handleIssueEvent(payload: any) {
+//     console.log('Issue Event:', payload);
+// }
 
-async function handlePullRequestEvent(payload: any) {
-    console.log('Pull Request Event:', payload);
-}
+// async function handlePullRequestEvent(payload: any) {
+//     console.log('Pull Request Event:', payload);
+// }
 
-async function handleIssueCommentEvent(payload: any) {
-    console.log('Issue Comment Event:', payload);
-}
 
 
 
