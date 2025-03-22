@@ -39,12 +39,12 @@ export default function Dashboard() {
     const [connectingWallet, setConnectingWallet] = useState(false)
     const [message, setMessage] = useState('')
     const [statusCode, setStatusCode] = useState(0)
+    const [popRepo, setPopRepo] = useState<string>('')
+    const [popRepoId, setPopRepoId] = useState<string>('')
     const [githubUsername, setGithubUsername] = useState<string | null>(null)
     const [remainingRewards, setRemainingRewards] = useState<{
         [key: string]: number
     }>({})
-    const [popRepo, setPopRepo] = useState('')
-    const [popRepoId, setPopRepoId] = useState('')
 
     const fetchData = async () => {
         try {
@@ -89,68 +89,7 @@ export default function Dashboard() {
         } finally {
             setLoading(false)
         }
-    };
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            if (!isLoaded || !isSignedIn || !user) return
-
-            // Extract GitHub username from external accounts
-            const githubAccount = user.externalAccounts?.find(
-                (acc) => acc.provider === 'github'
-            )
-
-            if (githubAccount) {
-                setGithubUsername(githubAccount.username || user.username)
-            } else {
-                setGithubUsername(user.username)
-            }
-        }
-
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('/api/check-repos')
-                const data = response.data
-                console.log(data)
-                setStatusCode(response.status)
-
-            if ('message' in data) {
-                console.log(data.message)
-                setMessage(data.message)
-                setRepos([])
-            } else if (Array.isArray(data)) {
-                setMessage('')
-                setRepos(data)
-                console.log('repo data added')
-                setRemainingRewards(
-                    data.reduce(async (acc, repo) => {
-                        acc[repo.name] = Number(repo.depositedFunds) / 10 ** 18
-                        return acc
-                    }, {})
-                )
-            } else if (
-                'repositories' in data &&
-                Array.isArray(data.repositories)
-            ) {
-                setMessage('')
-                setRepos(data.repositories)
-                setRemainingRewards(
-                    data.repositories.reduce((acc: any, repo: any) => {
-                        acc[repo.name] = repo.depositedFunds / 10 ** 18 // Initialize remaining rewards to 0
-                        return acc
-                    }, {})
-                )
-            } else {
-                console.error('Unexpected data format:', data)
-                setRepos([])
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error)
-            setRepos([])
-        } finally {
-            setLoading(false)
-        }
-    }})
+    }
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -208,8 +147,6 @@ export default function Dashboard() {
         }
     }
 
-    // Removed duplicate addAmount function
-
     const connectWallet = async () => {
         if (!window.ethereum) {
             alert('MetaMask is not installed!')
@@ -246,9 +183,6 @@ export default function Dashboard() {
     }
 
     const handleSetReward = async (repoName: string, repoId: string) => {
-        setPopRepo(repoName)
-        setPopRepoId(repoId)
-    const handleSetReward = async (repoName: string,repoId : string) => {
         setPopRepo(repoName)
         setPopRepoId(repoId)
         let address = walletAddress
@@ -406,6 +340,34 @@ export default function Dashboard() {
                 </div>
             </div>
             {showPopup && (
+                // <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
+                //     <div className="bg-[#1E1E1E] p-6 rounded-lg shadow-xl w-[90%] max-w-md border border-gray-700 transform scale-100 transition-transform duration-300">
+                //         <h2 className="text-white text-lg font-semibold mb-4 text-center">
+                //             Set Reward for{' '}
+                //             <span className="text-blue-400">
+                //                 {selectedRepo}
+                //             </span>
+                //         </h2>
+                //         <input
+                //             type="number"
+                //             placeholder="Enter reward amount"
+                //             className="w-full p-3 rounded-lg border border-gray-600 bg-[#0D1117] text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                //             value={rewardInput}
+                //             onChange={(e) => setRewardInput(e.target.value)}
+                //         />
+                //         <div className="flex justify-end mt-6 gap-3">
+                //             <button
+                //                 onClick={() => handleConfirmReward()}
+                //                 className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
+                //             >
+                //                 Cancel
+                //             </button>
+                //             <button
+                //                 onClick={handleConfirmReward}
+                //                 className="px-5 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all"
+                //             >
+                //                 Confirm
+                //             </button>
                     <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
                         <div className="bg-[#1E1E1E] p-6 rounded-lg shadow-xl w-[90%] max-w-md border border-gray-700 transform scale-100 transition-transform duration-300">
                             <h2 className="text-white text-lg font-semibold mb-4 text-center">
@@ -423,7 +385,7 @@ export default function Dashboard() {
                             />
                             <div className="flex justify-end mt-6 gap-3">
                                 <button
-                                    onClick={() => setShowPopup(false)}
+                                    onClick={() => handleConfirmReward()}
                                     className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
                                 >
                                     Cancel
@@ -437,10 +399,7 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
-
-        
+            )}
+        </div>
     )
-    }
 }
