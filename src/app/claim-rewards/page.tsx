@@ -57,6 +57,11 @@ export default function Claim() {
     const [claimedRepo, setClaimedRepo] = useState<string | null>(null)
     const [claimedRepos, setClaimedRepos] = useState<{ [key: string]: boolean }>({})
     const [githubUsername, setGithubUsername] = useState<string | null>(null)
+    const [claimableAmounts, setClaimableAmounts] = useState<{ [key: string]: number }>({
+        "repo1": 0.5,
+        "repo2": 1.2,
+        "repo3": 0.8,
+    })
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -131,7 +136,13 @@ export default function Claim() {
         }
     }
 
-    if (!isLoaded) return <Skeleton count={10} />
+    if (!isLoaded) return   <Skeleton 
+                                baseColor="#1A1A1A" 
+                                highlightColor="#333" 
+                                count={5} 
+                                height={60} 
+                                className="rounded-lg my-2 animate-pulse"
+                            />
 
     if (!isSignedIn) {
         return (
@@ -140,6 +151,7 @@ export default function Claim() {
             </div>
         )
     }
+    
 
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
@@ -159,9 +171,16 @@ export default function Claim() {
             <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
                 <h1 className="text-2xl p-3 font-bold">My Repos</h1>
                 <div className="w-full mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
-                    <div className="h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    <div className="w-fullmax-h-[80vh]  scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                         {loading || !githubUsername ? (
-                            <Skeleton count={5} height={50} />
+                                                    
+                                                        <Skeleton 
+                                                        baseColor="#1A1A1A" 
+                                                        highlightColor="#333" 
+                                                        count={5} 
+                                                        height={60} 
+                                                        className="rounded-lg my-2 animate-pulse"
+                                                    />
                         ) : (
                             repos.map(repo => (
                                 <div key={repo.id} className="flex items-center p-2 border-b border-gray-800 hover:bg-gray-800">
@@ -180,12 +199,15 @@ export default function Claim() {
                                         </div>
                                     </div>
                                     <div className="text-sm text-white flex items-center">
+                                    <span className="mr-4 text-green-400 font-bold">
+                                         {claimableAmounts[repo.name] !== undefined ? claimableAmounts[repo.name] : "Loading..."} ETH
+                                    </span>
                                         <button
                                             onClick={() => handleClaimReward(repo.name)}
                                             className={`px-4 py-2 font-semibold rounded-lg transition-all ${
                                                 claimedRepos[repo.name]
-                                                    ? 'bg-transparent text-red-600 cursor-not-allowed'
-                                                    : 'bg-green-500 hover:bg-green-600'
+                                                    ? 'bg-transparent text-red-600 cursor-pointer'
+                                                    : 'bg-green-500 hover:bg-green-600 cursor-pointer'
                                             }`}
                                             disabled={claimedRepos[repo.name]}
                                         >
