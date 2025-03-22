@@ -36,9 +36,7 @@ function LeetCodeCoinAnimation() {
                     </div>
                 </div>
             </div>
-            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">
-                Reward Processing...
-            </p>
+            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">Reward Processing...</p>
         </div>
     )
 }
@@ -65,11 +63,6 @@ export default function Claim() {
         [key: string]: boolean
     }>({})
     const [githubUsername, setGithubUsername] = useState<string | null>(null)
-    const [claimableAmounts, setClaimableAmounts] = useState<{ [key: string]: number }>({
-        "repo1": 0.5,
-        "repo2": 1.2,
-        "repo3": 0.8,
-    })
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -208,13 +201,7 @@ export default function Claim() {
         }, 3000)
     }
 
-    if (!isLoaded) return   <Skeleton 
-                                baseColor="#1A1A1A" 
-                                highlightColor="#333" 
-                                count={5} 
-                                height={60} 
-                                className="rounded-lg my-2 animate-pulse"
-                            />
+    if (!isLoaded) return <Skeleton count={10} />
 
     if (!isSignedIn) {
         return (
@@ -223,7 +210,6 @@ export default function Claim() {
             </div>
         )
     }
-    
 
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
@@ -234,9 +220,6 @@ export default function Claim() {
                     animateBy="words"
                     direction="top"
                     className="text-6xl mb-8"
-                    animationFrom="opacity-0"
-                    animationTo="opacity-100"
-                    onAnimationComplete={() => console.log('Animation Complete')}
                 />
             </h1>
 
@@ -253,16 +236,9 @@ export default function Claim() {
             <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
                 <h1 className="text-2xl p-3 font-bold">My Repos</h1>
                 <div className="w-full mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
-                    <div className="w-fullmax-h-[80vh]  scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    <div className="h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                         {loading || !githubUsername ? (
-                                                    
-                                                        <Skeleton 
-                                                        baseColor="#1A1A1A" 
-                                                        highlightColor="#333" 
-                                                        count={5} 
-                                                        height={60} 
-                                                        className="rounded-lg my-2 animate-pulse"
-                                                    />
+                            <Skeleton count={5} height={50} />
                         ) : (
                             repos.map((repo) => (
                                 <div
@@ -284,9 +260,6 @@ export default function Claim() {
                                         </div> */}
                                     </div>
                                     <div className="text-sm text-white flex items-center">
-                                    <span className="mr-4 text-green-400 font-bold">
-                                         {claimableAmounts[repo.repository.name] !== undefined ? claimableAmounts[repo.repository.name] : "Loading..."} ETH
-                                    </span>
                                         <button
                                             onClick={() =>
                                                 handleClaimReward(repo.repository)
