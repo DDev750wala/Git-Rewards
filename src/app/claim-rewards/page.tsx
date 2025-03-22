@@ -15,7 +15,11 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import { BsDot } from 'react-icons/bs'
 import BlurText from '@/components/BlurText'
 import axios from 'axios'
-import { FetchClaimableDetailsInterface, IRepository, IReward } from '@/lib/interfaces'
+import {
+    FetchClaimableDetailsInterface,
+    IRepository,
+    IReward,
+} from '@/lib/interfaces'
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from '@/lib/ethers-config'
 
 function LeetCodeCoinAnimation() {
@@ -36,12 +40,15 @@ function LeetCodeCoinAnimation() {
                     </div>
                 </div>
             </div>
-            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">Reward Processing...</p>
+            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">
+                Reward Processing...
+            </p>
         </div>
     )
 }
 
 export default function Claim() {
+
     const [repoOwner, setRepoOwner] = useState<{
         walletAddress: string | null
         name: string
@@ -51,6 +58,7 @@ export default function Claim() {
         emailAddress: string
         githubId: string
     } | null>(null)
+
     const [reward, setReward] = useState<IReward | null>(null)
     const { isLoaded, isSignedIn, user } = useUser()
     const [repos, setRepos] = useState<FetchClaimableDetailsInterface[]>([])
@@ -90,11 +98,11 @@ export default function Claim() {
                 const data = await response.data
                 setStatus(response.status)
 
-                console.log(response.status);
-                console.log("Status: ", status);
-                
+                console.log(response.status)
+                console.log('Status: ', status)
+
                 if (response.status === 200) {
-                    console.log('Data:', data);
+                    console.log('Data:', data)
                     setRepos(data.rewards)
                 } else {
                     console.error('Unexpected data format:', data)
@@ -130,71 +138,95 @@ export default function Claim() {
         }
     }
 
-    async function handleClaimReward(repo: IRepository) {
+    async function handleClaimReward(repo: FetchClaimableDetailsInterface) {
         if (!walletAddress) {
+            console.log('Wallet not connected')
+
             await connectWallet()
-        } else {
-            setIsClaiming(true)
+        }
+        // else {
+        setIsClaiming(true)
 
-            // call to change in database
-            const response = await axios.post('/api/dataBase/claimReward', {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                data: {
-                    rewardId: repo.id,
-                },
-            })
-            if (response.status !== 200) {
-                console.error('Failed to claim reward:', response.data)
-                alert('Failed to claim reward')
-                setIsClaiming(false)
-                return
+        console.log('Hello World1')
+        console.log(repo)
+
+        // call to change in database
+        // const response = await axios.post('/api/dataBase/claimReward', {
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     data: {
+        //         rewardFull: repo,
+        //     },
+        // })
+        const response = await axios.post('/api/dataBase/claimReward', {
+            rewardFull: repo,
+        })
+
+        console.log('Hello World2')
+        if (response.status !== 200) {
+            console.error('Failed to claim reward:', response.data)
+            alert('Failed to claim reward')
+            setIsClaiming(false)
+            return
+        }
+        console.log('Hello World3')
+        // if (response.status === 200 && response.data.owner) {
+        setRepoOwner(
+            response.data.owner as {
+                walletAddress: string | null
+                name: string
+                id: string
+                createdAt: Date
+                updatedAt: Date
+                emailAddress: string
+                githubId: string
             }
-            // if (response.status === 200 && response.data.owner) {
-            setRepoOwner(
-                response.data.owner as {
-                    walletAddress: string | null
-                    name: string
-                    id: string
-                    createdAt: Date
-                    updatedAt: Date
-                    emailAddress: string
-                    githubId: string
-                }
-            )
-            setReward(response.data.reward as IReward)
-            // }
+        )
+        // setReward(response.data.reward as IReward)
+        // }
 
-            const provider = new ethers.BrowserProvider(window.ethereum)
-            const signer = await provider.getSigner()
-            const userAddress = await signer.getAddress()
-            await provider.send('eth_requestAccounts', [])
-            const contract = new ethers.Contract(
-                CONTRACT_ADDRESS,
-                CONTRACT_ABI,
-                signer
-            ) as Contract
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
+        const userAddress = await signer.getAddress()
+        await provider.send('eth_requestAccounts', [])
+        const contract = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            CONTRACT_ABI,
+            signer
+        ) as Contract
 
-            if (contract) {
-                if (typeof contract.sendReward === 'function') {
-                    const tx = await contract.sendReward(
-                        repoOwner,
-                        userAddress,
-                        reward?.amountEth,
-                        repo.name
-                    )
-                } else {
-                    console.error(
-                        'addAmount function is not defined on the contract'
-                    )
-                }
+        console.log('Hello World5')
+
+        if (contract) {
+            console.log('contract found')
+            if (typeof contract.sendReward === 'function') {
+                // console.log('repoOwner:', repoOwner)
+                console.log('repoOwner:', response.data.owner.walletAddress)
+                console.log('userAddress:', userAddress)
+                console.log('repo.amountEth:', repo.amountEth)
+                console.log('repo.repository.name:', repo.repository.name)
+
+                const tx = await contract.sendReward(
+                    response.data.owner.walletAddress,
+                    userAddress,
+                    repo.amountEth.toString(),
+                    repo.repository.name
+                )
+            } else {
+                console.error(
+                    'addAmount function is not defined on the contract'
+                )
             }
         }
-        setClaimedRepo(repo.name)
+        // }
+        setClaimedRepo(repo.repository.name)
         setTimeout(() => {
             setIsClaiming(false)
-            setClaimedRepos((prev) => ({ ...prev, [repo.name]: true }))
+            setClaimedRepos((prev) => ({
+                ...prev,
+                [repo.repository.name]: true,
+            }))
             setTimeout(() => {
                 setClaimedRepo(null)
             }, 2000)
@@ -262,14 +294,20 @@ export default function Claim() {
                                     <div className="text-sm text-white flex items-center">
                                         <button
                                             onClick={() =>
-                                                handleClaimReward(repo.repository)
+                                                handleClaimReward(repo)
                                             }
                                             className={`px-4 py-2 font-semibold rounded-lg transition-all ${
-                                                claimedRepos[repo.repository.name]
+                                                claimedRepos[
+                                                    repo.repository.name
+                                                ]
                                                     ? 'bg-transparent text-red-600 cursor-not-allowed'
                                                     : 'bg-green-500 hover:bg-green-600'
                                             }`}
-                                            disabled={claimedRepos[repo.repository.name]}
+                                            disabled={
+                                                claimedRepos[
+                                                    repo.repository.name
+                                                ]
+                                            }
                                         >
                                             {claimedRepos[repo.repository.name]
                                                 ? 'Claimed'

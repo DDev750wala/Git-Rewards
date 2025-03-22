@@ -16,14 +16,16 @@ export async function GET(req: NextRequest) {
             where: { username: contributor.username as string }
         })
         if (!contributorFromDb) {
+            console.log('User not found in DB');
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
     
         const allRewards = await db.reward.findMany({
             where: { contributorId: contributorFromDb.id, claimed: false }, include: {
-                repository: true
+                repository: true,
             }
         })
+
         console.log('All rewards:', allRewards);
         
     
