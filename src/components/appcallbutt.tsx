@@ -21,7 +21,7 @@ export default function InstallPage() {
             
             <button
                 onClick={() => router.push("https://github.com/apps/contriflow/installations/new")}
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+                className="px-6 cursor-pointer py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
             >
                 Add/Remove Repo
             </button>

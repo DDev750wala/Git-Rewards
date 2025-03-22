@@ -48,7 +48,6 @@ function LeetCodeCoinAnimation() {
 }
 
 export default function Claim() {
-
     const [repoOwner, setRepoOwner] = useState<{
         walletAddress: string | null
         name: string
@@ -67,6 +66,7 @@ export default function Claim() {
     const [isClaiming, setIsClaiming] = useState(false)
     const [claimedRepo, setClaimedRepo] = useState<string | null>(null)
     const [status, setStatus] = useState<number>(0)
+    const [error, setError] = useState<string | null>(null)
     const [claimedRepos, setClaimedRepos] = useState<{
         [key: string]: boolean
     }>({})
@@ -107,6 +107,7 @@ export default function Claim() {
                 } else {
                     console.error('Unexpected data format:', data)
                     setRepos([])
+                    setError("Failed to fetch funds")
                 }
             } catch (error) {
                 console.error('Error fetching data:', error)
@@ -243,83 +244,132 @@ export default function Claim() {
         )
     }
 
-    return (
-        <div className="bg-[#0D1117] text-white p-6 min-h-screen">
-            <h1 className="text-3xl font-bold mb-6">
-                <BlurText
-                    text="Claim Rewards"
-                    delay={100}
-                    animateBy="words"
-                    direction="top"
-                    className="text-6xl mb-8"
-                />
-            </h1>
+    if(error && error.length > 0 && status !== 200) {
+        alert(error)
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <h1 className="text-2xl font-bold mb-4">{error}</h1>
+            </div>
+        )
+    }
 
-            {isClaiming && <LeetCodeCoinAnimation />}
-            {claimedRepo && !isClaiming && (
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                    <p className="text-xl text-white font-bold">
-                        Reward claimed for{' '}
-                        <span className="text-yellow-400">{claimedRepo}</span>
-                    </p>
-                </div>
-            )}
+    // if (repos.length > 0) {
+        return (
+            <div className="bg-[#0D1117] text-white p-6 min-h-screen">
+                <h1 className="text-3xl font-bold mb-6">
+                    <BlurText
+                        text="Claim Rewards"
+                        delay={100}
+                        animateBy="words"
+                        direction="top"
+                        className="text-6xl mb-8"
+                    />
+                </h1>
 
-            <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
-                <h1 className="text-2xl p-3 font-bold">My Repos</h1>
-                <div className="w-full mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
-                    <div className="h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                        {loading || !githubUsername ? (
-                            <Skeleton count={5} height={50} />
-                        ) : (
-                            repos.map((repo) => (
-                                <div
-                                    key={repo.id}
-                                    className="flex items-center p-2 border-b border-gray-800 hover:bg-gray-800"
-                                >
-                                    <BsDot className="text-green-500 text-2xl" />
-                                    <div className="flex-grow">
-                                        <a
-                                            href={`https://github.com/${githubUsername}/${repo.repository.name}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-400 font-semibold"
-                                        >
-                                            {repo.repository.name}
-                                        </a>
-                                        {/* <div className="text-sm text-gray-400">
-                                            Branch: {repo.branch} • Commit: {repo.commit}
-                                        </div> */}
-                                    </div>
-                                    <div className="text-sm text-white flex items-center">
-                                        <button
-                                            onClick={() =>
-                                                handleClaimReward(repo)
-                                            }
-                                            className={`px-4 py-2 font-semibold rounded-lg transition-all ${
-                                                claimedRepos[
+                {isClaiming && <LeetCodeCoinAnimation />}
+                {claimedRepo && !isClaiming && (
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                        <p className="text-xl text-white font-bold">
+                            Reward claimed for{' '}
+                            <span className="text-yellow-400">
+                                {claimedRepo}
+                            </span>
+                        </p>
+                    </div>
+                )}
+
+                <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
+                    <h1 className="text-2xl p-3 font-bold">My Repos</h1>
+                    <div className="w-full mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
+                        <div className="h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                            {loading || !githubUsername ? (
+                                <Skeleton
+                                    baseColor="#1A1A1A"
+                                    highlightColor="#333"
+                                    count={5}
+                                    height={60}
+                                    className="rounded-lg my-2 animate-pulse"
+                                />
+                            ) : (
+                                repos.map((repo) => (
+                                    <div
+                                        key={repo.id}
+                                        className="flex items-center p-2 border-b border-gray-800 hover:bg-gray-800"
+                                    >
+                                        <BsDot className="text-green-500 text-2xl" />
+                                        <div className="flex-grow">
+                                            <a
+                                                href={`https://github.com/${githubUsername}/${repo.repository.name}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-400 font-semibold"
+                                            >
+                                                {repo.repository.name}
+                                            </a>
+                                            {/* <div className="text-sm text-gray-400">
+                                                Branch: {repo.branch} • Commit: {repo.commit}
+                                            </div> */}
+                                        </div>
+                                        <div className="text-sm text-white flex items-center">
+                                            <button
+                                                onClick={() =>
+                                                    handleClaimReward(repo)
+                                                }
+                                                className={`px-4 py-2 font-semibold rounded-lg transition-all ${
+                                                    claimedRepos[
+                                                        repo.repository.name
+                                                    ]
+                                                        ? 'bg-transparent text-red-600 cursor-not-allowed'
+                                                        : 'bg-green-500 hover:bg-green-600'
+                                                }`}
+                                                disabled={
+                                                    claimedRepos[
+                                                        repo.repository.name
+                                                    ]
+                                                }
+                                            >
+                                                {claimedRepos[
                                                     repo.repository.name
                                                 ]
-                                                    ? 'bg-transparent text-red-600 cursor-not-allowed'
-                                                    : 'bg-green-500 hover:bg-green-600'
-                                            }`}
-                                            disabled={
-                                                claimedRepos[
-                                                    repo.repository.name
-                                                ]
-                                            }
-                                        >
-                                            {claimedRepos[repo.repository.name]
-                                                ? 'Claimed'
-                                                : 'Claim Reward'}
-                                        </button>
+                                                    ? 'Claimed'
+                                                    : 'Claim Reward'}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
-                        )}
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    )
+        )
+    // }
+    
+    if(status === 404) {
+        alert("Hello WOlred")
+    }
+
+    // else if (repos.length === 0 && status === 200) {
+    //     return (
+    //         <div className="flex flex-col items-center justify-center min-h-screen">
+    //             <h1 className="text-2xl font-bold mb-4">No rewards to claim</h1>
+    //         </div>
+    //     )
+    // }
+
+    // else if (repos.length === 0 && status !== 200) {
+    //     return (
+    //         <div className="flex flex-col items-center justify-center min-h-screen">
+    //             <h1 className="text-2xl font-bold mb-4">User not found</h1>
+    //         </div>
+    //     )
+    // }
+
+    // else {
+    //     return (
+    //         <div className="flex flex-col items-center justify-center min-h-screen">
+    //             <h1 className="text-2xl font-bold mb-4">There is some internal server error</h1>
+    //         </div>
+    //     )
+    // }
 }

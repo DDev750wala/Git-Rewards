@@ -294,13 +294,13 @@ export default function Dashboard() {
                 className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer"
             >
                 {walletAddress ? "Disconnect" : "Connect Wallet"}
-                className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                
             {/* > */}
                 {/* Connect Wallet */}
             </button>
             {walletAddress && (
                 <p className="text-green-400 p-2">
-                    Connected Wallet: {walletAddress}
+                    Wallet Connected: {walletAddress}
                 </p>
             )}
 
@@ -401,21 +401,20 @@ export default function Dashboard() {
                             </h2>
                             <input
                                 type="number"
-                                placeholder="Enter reward amount"
+                                placeholder="10ETH"
                                 className="w-full p-3 rounded-lg border border-gray-600 bg-[#0D1117] text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                 value={rewardInput}
                                 onChange={(e) => setRewardInput(e.target.value)}
                             />
                             <div className="flex justify-end mt-6 gap-3">
-                                <button
-                                    onClick={() => handleConfirmReward()}
-                                    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
-                                >
-                                    Cancel
-                                </button>
+                            <button
+                                onClick={() => setShowPopup(false)}
+                                        className="px-4 cursor-pointer py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all">
+                                                Cancel
+                            </button>
                                 <button
                                     onClick={handleConfirmReward}
-                                    className="px-5 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all"
+                                    className="px-5 cursor-pointer py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all"
                                 >
                                     Confirm
                                 </button>

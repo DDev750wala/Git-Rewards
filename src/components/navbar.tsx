@@ -1,63 +1,61 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
-import { ChevronDown, Menu, Sun, Moon } from "lucide-react";
-import { ethers } from "ethers";
-import Link from "next/link";
+import { useEffect, useState } from 'react'
+import { useUser, UserButton } from '@clerk/nextjs'
+import { ChevronDown, Menu, Sun, Moon } from 'lucide-react'
+import { ethers } from 'ethers'
+import Link from 'next/link'
 
 const Navbar = () => {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const { isSignedIn } = useUser(); 
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [darkMode, setDarkMode] = useState(false)
+    const { isSignedIn } = useUser()
+    const [walletAddress, setWalletAddress] = useState<string | null>(null)
 
-  useEffect(() => {
-    const theme = localStorage.getItem("theme") || "light";
-    setDarkMode(theme === "dark");
-    if (theme === "dark") document.documentElement.classList.add("dark");
-  }, []);
+    useEffect(() => {
+        const theme = localStorage.getItem('theme') || 'light'
+        setDarkMode(theme === 'dark')
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+    }, [])
 
-  const toggleTheme = () => {
-    if (darkMode) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    }
-    setDarkMode(!darkMode);
-  };
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      alert("MetaMask is not installed!");
-      return;
+    const toggleTheme = () => {
+        if (darkMode) {
+            document.documentElement.classList.remove('dark')
+            localStorage.setItem('theme', 'light')
+        } else {
+            document.documentElement.classList.add('dark')
+            localStorage.setItem('theme', 'dark')
+        }
+        setDarkMode(!darkMode)
     }
 
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      setWalletAddress(accounts[0]);
-    } catch (error) {
-      console.error("Error connecting to MetaMask:", error);
-      alert("Failed to connect wallet");
+    const connectWallet = async () => {
+        if (!window.ethereum) {
+            alert('MetaMask is not installed!')
+            return
+        }
+
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const accounts = await provider.send('eth_requestAccounts', [])
+            setWalletAddress(accounts[0])
+        } catch (error) {
+            console.error('Error connecting to MetaMask:', error)
+            alert('Failed to connect wallet')
+        }
     }
-  };
 
-  const toggleDropdown = (menu: string) => {
-    setOpenDropdown(openDropdown === menu ? null : menu);
-  };
+    const toggleDropdown = (menu: string) => {
+        setOpenDropdown(openDropdown === menu ? null : menu)
+    }
 
-  return (
-    <nav className="sticky top-0 z-50 bg-black/30 backdrop-blur-lg backdrop-filter text-white px-6 py-4 flex items-center justify-between relative border-b border-gray-800">
-  
-      <div className="flex items-center space-x-4">
-        <span className="text-xl font-bold">Git Rewards</span>
+    return (
+        <nav className="sticky top-0 z-50 bg-black/30 backdrop-blur-lg backdrop-filter text-white px-6 py-4 flex items-center justify-between relative border-b border-gray-800">
+            <div className="flex items-center space-x-4">
+                <span className="text-xl font-bold">Git Rewards</span>
 
-      
-        <div className="hidden md:flex space-x-6">
+                {/* <div className="hidden md:flex space-x-6">
           {["Leaderboard", "Challenges", "Rewards"].map((item) => (
             <div key={item} className="relative">
               <button
@@ -93,63 +91,85 @@ const Navbar = () => {
               )}
             </div>
           ))}
-        </div>
-      </div>
+        </div> */}
+            </div>
 
-      
-      <div className="flex items-center space-x-4">
-      
-      
-      <Link href="/" className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10">
-          Home
-        </Link>
+            <div className="flex items-center space-x-4">
+                <Link
+                    href="/"
+                    className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10"
+                >
+                    Home
+                </Link>
 
-        <Link href="/claim-rewards" className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10">
-          Claim Reward
-        </Link>
+                <Link
+                    href="/claim-rewards"
+                    className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10"
+                >
+                    Claim Reward
+                </Link>
 
-      <Link href="/landing" className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10">
-          Landing
-        </Link>
+                <Link
+                    href="/landing"
+                    className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10"
+                >
+                    Landing
+                </Link>
 
-        {isSignedIn ? (
-          <UserButton afterSignOutUrl="/" />
-        ) : (
-          <>
-            <a href="/sign-in" className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10">
-              Sign-in
-            </a>
-            <a href="/sign-up" className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10">
-              Sign-up
-            </a>
-          </>
-        )}
+                {isSignedIn ? (
+                    <UserButton afterSignOutUrl="/" />
+                ) : (
+                    <>
+                        <a
+                            href="/sign-in"
+                            className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10"
+                        >
+                            Sign-in
+                        </a>
+                        <a
+                            href="/sign-up"
+                            className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10"
+                        >
+                            Sign-up
+                        </a>
+                    </>
+                )}
 
-      
-        {isSignedIn && (
+                {/* {isSignedIn && (
           <button onClick={connectWallet} className="p-2 rounded-full bg-gray-700 hover:bg-gray-600">
             {walletAddress ? walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4) : "Connect Wallet"}
           </button>
-        )}
+        )} */}
 
-       
-        <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <Menu size={24} />
-        </button>
-      </div>
+                <button
+                    className="md:hidden"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                    <Menu size={24} />
+                </button>
+            </div>
 
-   
-      {isMenuOpen && (
-        <div className="absolute top-16 left-0 w-full bg-black/60 backdrop-blur-lg text-white flex flex-col space-y-2 py-4 px-6">
-          {["Leaderboard", "Challenges", "Rewards", "Enterprise", "My Rewards"].map((link) => (
-            <a key={link} href="#" className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10">
-              {link}
-            </a>
-          ))}
-        </div>
-      )}
-    </nav>
-  );
-};
+            {isMenuOpen && (
+                <div className="absolute top-16 left-0 w-full bg-black/60 backdrop-blur-lg text-white flex flex-col space-y-2 py-4 px-6">
+                    {[
+                        'Leaderboard',
+                        'Challenges',
+                        'Rewards',
+                        'Enterprise',
+                        'My Rewards',
+                    ].map((link) => (
+                        <a
+                            key={link}
+                            href="#"
+                            className="px-4 py-2 rounded-full transition duration-200 text-white hover:bg-white/10"
+                        >
+                            {link}
+                        </a>
+                    ))}
+                </div>
+            )}
+        </nav>
+    )
+}
 
-export default Navbar;
+export default Navbar
