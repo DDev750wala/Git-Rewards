@@ -13,6 +13,7 @@ import axios from 'axios'
 import { Repository } from '@prisma/client'
 import Link from 'next/link'
 import { set } from 'zod'
+import InstallPage from '@/components/appcallbutt'
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from '@/lib/ethers-config'
 import { ContriFlow } from 'typechain-types'
 import { RewardContract } from '@/lib/contract-interface'
@@ -147,7 +148,17 @@ export default function Dashboard() {
         }
     }
 
+    const disconnectWallet = () => {
+        setWalletAddress(null);
+        Cookies.remove('walletAddress');
+    };
+
     const connectWallet = async () => {
+        if (walletAddress) {
+            disconnectWallet();
+            return;
+        }
+
         if (!window.ethereum) {
             alert('MetaMask is not installed!')
             return null
@@ -280,9 +291,12 @@ export default function Dashboard() {
 
             <button
                 onClick={connectWallet}
-                className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer"
             >
-                Connect Wallet
+                {walletAddress ? "Disconnect" : "Connect Wallet"}
+                className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+            {/* > */}
+                {/* Connect Wallet */}
             </button>
             {walletAddress && (
                 <p className="text-green-400 p-2">
@@ -291,11 +305,20 @@ export default function Dashboard() {
             )}
 
             <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
+            <div className='flex justify-between  items-center p-2'>
                 <h1 className="text-2xl p-3 font-bold">My Repos</h1>
-                <div className="w-full h-[20rem] mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
+                <span className=''><InstallPage/></span>
+                </div>
+                <div className="w-fullmax-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
                     <div className="h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                         {loading ? (
-                            <Skeleton count={5} height={50} />
+                            <Skeleton 
+                            baseColor="#1A1A1A" 
+                            highlightColor="#333" 
+                            count={5} 
+                            height={60} 
+                            className="rounded-lg my-2 animate-pulse"
+                        />
                         ) : (
                             repos.map((repo) => (
                                 <div
@@ -324,7 +347,7 @@ export default function Dashboard() {
                                     </div>
                                     <StarBorder
                                         as="button"
-                                        className="custom-class"
+                                        className="custom-class cursor-pointer"
                                         color="cyan"
                                         speed="3s"
                                         onClick={() =>
