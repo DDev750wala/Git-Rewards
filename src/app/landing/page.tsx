@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { ethers } from 'ethers'
+import { Contract, ethers } from 'ethers'
 import Cookies from 'js-cookie'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -14,6 +14,9 @@ import { Repository } from '@prisma/client'
 import Link from 'next/link'
 import { set } from 'zod'
 import InstallPage from '@/components/appcallbutt'
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from '@/lib/ethers-config'
+import { ContriFlow } from 'typechain-types'
+import { RewardContract } from '@/lib/contract-interface'
 declare global {
     interface Window {
         ethereum?: any
@@ -37,12 +40,12 @@ export default function Dashboard() {
     const [connectingWallet, setConnectingWallet] = useState(false)
     const [message, setMessage] = useState('')
     const [statusCode, setStatusCode] = useState(0)
-    const [popRepo, setPopRepo] = useState<string>("")
-    const [popRepoId, setPopRepoId] = useState<string>("")
     const [githubUsername, setGithubUsername] = useState<string | null>(null)
     const [remainingRewards, setRemainingRewards] = useState<{
         [key: string]: number
     }>({})
+    const [popRepo, setPopRepo] = useState('')
+    const [popRepoId, setPopRepoId] = useState('')
 
     const fetchData = async () => {
         try {
@@ -58,18 +61,25 @@ export default function Dashboard() {
             } else if (Array.isArray(data)) {
                 setMessage('')
                 setRepos(data)
-                console.log("repo data added")
-                setRemainingRewards(data.reduce(async (acc, repo) => {
-                    acc[repo.name] = Number(repo.depositedFunds) / 10 ** 18; 
-                    return acc;
-                }, {}));
-            } else if ('repositories' in data && Array.isArray(data.repositories)) {
+                console.log('repo data added')
+                setRemainingRewards(
+                    data.reduce(async (acc, repo) => {
+                        acc[repo.name] = Number(repo.depositedFunds) / 10 ** 18
+                        return acc
+                    }, {})
+                )
+            } else if (
+                'repositories' in data &&
+                Array.isArray(data.repositories)
+            ) {
                 setMessage('')
                 setRepos(data.repositories)
-                setRemainingRewards(data.repositories.reduce((acc : any, repo : any) => {
-                    acc[repo.name] = repo.depositedFunds / 10 ** 18; // Initialize remaining rewards to 0
-                    return acc;
-                }, {}));
+                setRemainingRewards(
+                    data.repositories.reduce((acc: any, repo: any) => {
+                        acc[repo.name] = repo.depositedFunds / 10 ** 18 // Initialize remaining rewards to 0
+                        return acc
+                    }, {})
+                )
             } else {
                 console.error('Unexpected data format:', data)
                 setRepos([])
@@ -98,6 +108,67 @@ export default function Dashboard() {
             }
         }
 
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('/api/check-repos')
+                const data = response.data
+                console.log(data)
+                setStatusCode(response.status)
+
+            if ('message' in data) {
+                console.log(data.message)
+                setMessage(data.message)
+                setRepos([])
+            } else if (Array.isArray(data)) {
+                setMessage('')
+                setRepos(data)
+                console.log('repo data added')
+                setRemainingRewards(
+                    data.reduce(async (acc, repo) => {
+                        acc[repo.name] = Number(repo.depositedFunds) / 10 ** 18
+                        return acc
+                    }, {})
+                )
+            } else if (
+                'repositories' in data &&
+                Array.isArray(data.repositories)
+            ) {
+                setMessage('')
+                setRepos(data.repositories)
+                setRemainingRewards(
+                    data.repositories.reduce((acc: any, repo: any) => {
+                        acc[repo.name] = repo.depositedFunds / 10 ** 18 // Initialize remaining rewards to 0
+                        return acc
+                    }, {})
+                )
+            } else {
+                console.error('Unexpected data format:', data)
+                setRepos([])
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error)
+            setRepos([])
+        } finally {
+            setLoading(false)
+        }
+    }})
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            if (!isLoaded || !isSignedIn || !user) return
+
+            // Extract GitHub username from external accounts
+            const githubAccount = user.externalAccounts?.find(
+                (acc) => acc.provider === 'github'
+            )
+
+            if (githubAccount) {
+                setGithubUsername(githubAccount.username || user.username)
+            } else {
+                setGithubUsername(user.username)
+            }
+        }
+
         fetchUser()
         fetchData()
     }, [isLoaded, isSignedIn, user])
@@ -105,9 +176,33 @@ export default function Dashboard() {
     const addAmount = async (repoName: string, amount: number) => {
         try {
             await axios.post('/api/dataBase/addAmountToRepo', {
-                repoId : popRepoId,
-                amount : amount * 10 ** 18,
+                repoId: popRepoId,
+                amount: amount * 10 ** 18,
             })
+
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const signer = await provider.getSigner()
+            const userAddress = await signer.getAddress()
+            await provider.send('eth_requestAccounts', [])
+            const contract = new ethers.Contract(
+                CONTRACT_ADDRESS,
+                CONTRACT_ABI,
+                signer
+            ) as Contract
+
+            if (contract) {
+                if (typeof contract.addAmount === 'function') {
+                    const tx = await contract.addAmount(
+                        userAddress, 
+                        repoName,
+                        {
+                            value: ethers.parseEther(amount.toString()),
+                        }
+                    )
+                } else {
+                    console.error('addAmount function is not defined on the contract')
+                }
+            }
             fetchData()
         } catch (error) {
             console.error('Error adding amount:', error)
@@ -159,6 +254,9 @@ export default function Dashboard() {
         }
     }
 
+    const handleSetReward = async (repoName: string, repoId: string) => {
+        setPopRepo(repoName)
+        setPopRepoId(repoId)
     const handleSetReward = async (repoName: string,repoId : string) => {
         setPopRepo(repoName)
         setPopRepoId(repoId)
@@ -180,7 +278,10 @@ export default function Dashboard() {
         if (selectedRepo && remainingRewards[selectedRepo] !== undefined) {
             setRemainingRewards((prev) => ({
                 ...prev,
-                [selectedRepo]: Math.max(0, prev[selectedRepo]! - Number(rewardInput)),
+                [selectedRepo]: Math.max(
+                    0,
+                    prev[selectedRepo]! - Number(rewardInput)
+                ),
             }))
         }
         alert(`Reward of ${rewardInput} ETH set for ${selectedRepo}`)
@@ -211,7 +312,9 @@ export default function Dashboard() {
     if (statusCode === 500) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
-                <h1 className="text-2xl font-bold mb-4">Internal Server Error</h1>
+                <h1 className="text-2xl font-bold mb-4">
+                    Internal Server Error
+                </h1>
             </div>
         )
     }
@@ -221,7 +324,11 @@ export default function Dashboard() {
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <h1 className="text-2xl font-bold mb-4">App not installed</h1>
                 <h2 className="text-xl font-bold mb-4">
-                    <Link href={'https://github.com/apps/contriflow/installations/new'}>
+                    <Link
+                        href={
+                            'https://github.com/apps/contriflow/installations/new'
+                        }
+                    >
                         Start by installing our GitHub app
                     </Link>
                 </h2>
@@ -232,15 +339,17 @@ export default function Dashboard() {
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
             <h1 className="text-3xl font-bold mb-6">
-                <BlurText 
-                    text="Dashboard" 
-                    delay={100} 
-                    animateBy="words" 
-                    direction="top" 
-                    className="text-6xl mb-8" 
-                    animationFrom="opacity-0" 
-                    animationTo="opacity-100" 
-                    onAnimationComplete={() => console.log('Animation completed')} 
+                <BlurText
+                    text="Dashboard"
+                    delay={100}
+                    animateBy="words"
+                    direction="top"
+                    className="text-6xl mb-8"
+                    animationFrom="opacity-0"
+                    animationTo="opacity-100"
+                    onAnimationComplete={() =>
+                        console.log('Animation completed')
+                    }
                 />
             </h1>
 
@@ -249,8 +358,15 @@ export default function Dashboard() {
                 className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer"
             >
                 {walletAddress ? "Disconnect" : "Connect Wallet"}
+                className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+            {/* > */}
+                {/* Connect Wallet */}
             </button>
-            {walletAddress && <p className="text-green-400 p-2">Connected Wallet: {walletAddress}</p>}
+            {walletAddress && (
+                <p className="text-green-400 p-2">
+                    Connected Wallet: {walletAddress}
+                </p>
+            )}
 
             <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
             <div className='flex justify-between  items-center p-2'>
@@ -269,7 +385,10 @@ export default function Dashboard() {
                         />
                         ) : (
                             repos.map((repo) => (
-                                <div key={repo.id} className="flex items-center justify-between p-4 border-b border-gray-800 hover:bg-gray-800">
+                                <div
+                                    key={repo.id}
+                                    className="flex items-center justify-between p-4 border-b border-gray-800 hover:bg-gray-800"
+                                >
                                     <div className="flex items-center">
                                         <BsDot className="text-green-500 text-2xl" />
                                         <div className="flex-grow">
@@ -282,7 +401,11 @@ export default function Dashboard() {
                                                 {repo.name}
                                             </a>
                                             <p className="text-sm text-gray-400">
-                                                Remaining Funds: {remainingRewards[repo.name]?.toFixed(2)} ETH
+                                                Remaining Funds:{' '}
+                                                {remainingRewards[
+                                                    repo.name
+                                                ]?.toFixed(2)}{' '}
+                                                ETH
                                             </p>
                                         </div>
                                     </div>
@@ -292,7 +415,7 @@ export default function Dashboard() {
                                         color="cyan"
                                         speed="3s"
                                         onClick={() =>
-                                            handleSetReward(repo.name , repo.id)
+                                            handleSetReward(repo.name, repo.id)
                                         }
                                     >
                                         Set Reward
@@ -320,12 +443,12 @@ export default function Dashboard() {
                                 onChange={(e) => setRewardInput(e.target.value)}
                             />
                             <div className="flex justify-end mt-6 gap-3">
-                            <button
-    onClick={() => setShowPopup(false)}
-    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
->
-    Cancel
-</button>
+                                <button
+                                    onClick={() => setShowPopup(false)}
+                                    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
+                                >
+                                    Cancel
+                                </button>
                                 <button
                                     onClick={handleConfirmReward}
                                     className="px-5 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all"
@@ -338,4 +461,5 @@ export default function Dashboard() {
                 )}
             </div>
     )
+    }
 }

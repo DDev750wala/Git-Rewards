@@ -9,21 +9,14 @@ declare global {
 }
 
 import { useUser } from '@clerk/nextjs'
-import { ethers } from 'ethers'
+import { Contract, ethers } from 'ethers'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { BsDot } from 'react-icons/bs'
 import BlurText from '@/components/BlurText'
-
-interface Repo {
-    id: number
-    name: string
-    html_url: string
-    stargazers_count: number
-    branch: string
-    commit: string
-    timestamp: string
-}
+import axios from 'axios'
+import { FetchClaimableDetailsInterface, IRepository, IReward } from '@/lib/interfaces'
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from '@/lib/ethers-config'
 
 function LeetCodeCoinAnimation() {
     return (
@@ -43,19 +36,34 @@ function LeetCodeCoinAnimation() {
                     </div>
                 </div>
             </div>
-            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">Reward Processing...</p>
+            <p className="mt-4 text-xl font-bold text-yellow-400 animate-fade-in">
+                Reward Processing...
+            </p>
         </div>
     )
 }
 
 export default function Claim() {
+    const [repoOwner, setRepoOwner] = useState<{
+        walletAddress: string | null
+        name: string
+        id: string
+        createdAt: Date
+        updatedAt: Date
+        emailAddress: string
+        githubId: string
+    } | null>(null)
+    const [reward, setReward] = useState<IReward | null>(null)
     const { isLoaded, isSignedIn, user } = useUser()
-    const [repos, setRepos] = useState<Repo[]>([])
+    const [repos, setRepos] = useState<FetchClaimableDetailsInterface[]>([])
     const [walletAddress, setWalletAddress] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [isClaiming, setIsClaiming] = useState(false)
     const [claimedRepo, setClaimedRepo] = useState<string | null>(null)
-    const [claimedRepos, setClaimedRepos] = useState<{ [key: string]: boolean }>({})
+    const [status, setStatus] = useState<number>(0)
+    const [claimedRepos, setClaimedRepos] = useState<{
+        [key: string]: boolean
+    }>({})
     const [githubUsername, setGithubUsername] = useState<string | null>(null)
     const [claimableAmounts, setClaimableAmounts] = useState<{ [key: string]: number }>({
         "repo1": 0.5,
@@ -67,9 +75,13 @@ export default function Claim() {
         const fetchUser = async () => {
             if (!isLoaded || !isSignedIn || !user) return
 
-            const githubAccount = user.externalAccounts?.find(acc => acc.provider === 'github')
-            const username = githubAccount ? githubAccount.username || user.username : user.username
-            
+            const githubAccount = user.externalAccounts?.find(
+                (acc) => acc.provider === 'github'
+            )
+            const username = githubAccount
+                ? githubAccount.username || user.username
+                : user.username
+
             setGithubUsername(username)
         }
 
@@ -79,13 +91,18 @@ export default function Claim() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/api/check-repos')
-                const data = await response.json()
+                const response = await axios.get(
+                    '/api/dataBase/fetch-claimable-details'
+                )
+                const data = await response.data
+                setStatus(response.status)
 
-                if (Array.isArray(data)) {
-                    setRepos(data)
-                } else if ('repositories' in data && Array.isArray(data.repositories)) {
-                    setRepos(data.repositories)
+                console.log(response.status);
+                console.log("Status: ", status);
+                
+                if (response.status === 200) {
+                    console.log('Data:', data);
+                    setRepos(data.rewards)
                 } else {
                     console.error('Unexpected data format:', data)
                     setRepos([])
@@ -120,20 +137,75 @@ export default function Claim() {
         }
     }
 
-    async function handleClaimReward(repoName: string) {
+    async function handleClaimReward(repo: IRepository) {
         if (!walletAddress) {
             await connectWallet()
         } else {
             setIsClaiming(true)
-            setClaimedRepo(repoName)
-            setTimeout(() => {
+
+            // call to change in database
+            const response = await axios.post('/api/dataBase/claimReward', {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                data: {
+                    rewardId: repo.id,
+                },
+            })
+            if (response.status !== 200) {
+                console.error('Failed to claim reward:', response.data)
+                alert('Failed to claim reward')
                 setIsClaiming(false)
-                setClaimedRepos(prev => ({ ...prev, [repoName]: true }))
-                setTimeout(() => {
-                    setClaimedRepo(null)
-                }, 2000)
-            }, 3000)
+                return
+            }
+            // if (response.status === 200 && response.data.owner) {
+            setRepoOwner(
+                response.data.owner as {
+                    walletAddress: string | null
+                    name: string
+                    id: string
+                    createdAt: Date
+                    updatedAt: Date
+                    emailAddress: string
+                    githubId: string
+                }
+            )
+            setReward(response.data.reward as IReward)
+            // }
+
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const signer = await provider.getSigner()
+            const userAddress = await signer.getAddress()
+            await provider.send('eth_requestAccounts', [])
+            const contract = new ethers.Contract(
+                CONTRACT_ADDRESS,
+                CONTRACT_ABI,
+                signer
+            ) as Contract
+
+            if (contract) {
+                if (typeof contract.sendReward === 'function') {
+                    const tx = await contract.sendReward(
+                        repoOwner,
+                        userAddress,
+                        reward?.amountEth,
+                        repo.name
+                    )
+                } else {
+                    console.error(
+                        'addAmount function is not defined on the contract'
+                    )
+                }
+            }
         }
+        setClaimedRepo(repo.name)
+        setTimeout(() => {
+            setIsClaiming(false)
+            setClaimedRepos((prev) => ({ ...prev, [repo.name]: true }))
+            setTimeout(() => {
+                setClaimedRepo(null)
+            }, 2000)
+        }, 3000)
     }
 
     if (!isLoaded) return   <Skeleton 
@@ -156,14 +228,24 @@ export default function Claim() {
     return (
         <div className="bg-[#0D1117] text-white p-6 min-h-screen">
             <h1 className="text-3xl font-bold mb-6">
-                <BlurText text="Claim Rewards" delay={100} animateBy="words" direction="top" className="text-6xl mb-8" />
+                <BlurText
+                    text="Claim Rewards"
+                    delay={100}
+                    animateBy="words"
+                    direction="top"
+                    className="text-6xl mb-8"
+                    animationFrom="opacity-0"
+                    animationTo="opacity-100"
+                    onAnimationComplete={() => console.log('Animation Complete')}
+                />
             </h1>
 
             {isClaiming && <LeetCodeCoinAnimation />}
             {claimedRepo && !isClaiming && (
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                     <p className="text-xl text-white font-bold">
-                        Reward claimed for <span className="text-yellow-400">{claimedRepo}</span>
+                        Reward claimed for{' '}
+                        <span className="text-yellow-400">{claimedRepo}</span>
                     </p>
                 </div>
             )}
@@ -182,36 +264,43 @@ export default function Claim() {
                                                         className="rounded-lg my-2 animate-pulse"
                                                     />
                         ) : (
-                            repos.map(repo => (
-                                <div key={repo.id} className="flex items-center p-2 border-b border-gray-800 hover:bg-gray-800">
+                            repos.map((repo) => (
+                                <div
+                                    key={repo.id}
+                                    className="flex items-center p-2 border-b border-gray-800 hover:bg-gray-800"
+                                >
                                     <BsDot className="text-green-500 text-2xl" />
                                     <div className="flex-grow">
                                         <a
-                                            href={`https://github.com/${githubUsername}/${repo.name}`}
+                                            href={`https://github.com/${githubUsername}/${repo.repository.name}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-400 font-semibold"
                                         >
-                                            {repo.name}
+                                            {repo.repository.name}
                                         </a>
-                                        <div className="text-sm text-gray-400">
+                                        {/* <div className="text-sm text-gray-400">
                                             Branch: {repo.branch} • Commit: {repo.commit}
-                                        </div>
+                                        </div> */}
                                     </div>
                                     <div className="text-sm text-white flex items-center">
                                     <span className="mr-4 text-green-400 font-bold">
-                                         {claimableAmounts[repo.name] !== undefined ? claimableAmounts[repo.name] : "Loading..."} ETH
+                                         {claimableAmounts[repo.repository.name] !== undefined ? claimableAmounts[repo.repository.name] : "Loading..."} ETH
                                     </span>
                                         <button
-                                            onClick={() => handleClaimReward(repo.name)}
+                                            onClick={() =>
+                                                handleClaimReward(repo.repository)
+                                            }
                                             className={`px-4 py-2 font-semibold rounded-lg transition-all ${
-                                                claimedRepos[repo.name]
-                                                    ? 'bg-transparent text-red-600 cursor-pointer'
-                                                    : 'bg-green-500 hover:bg-green-600 cursor-pointer'
+                                                claimedRepos[repo.repository.name]
+                                                    ? 'bg-transparent text-red-600 cursor-not-allowed'
+                                                    : 'bg-green-500 hover:bg-green-600'
                                             }`}
-                                            disabled={claimedRepos[repo.name]}
+                                            disabled={claimedRepos[repo.repository.name]}
                                         >
-                                            {claimedRepos[repo.name] ? 'Claimed' : 'Claim Reward'}
+                                            {claimedRepos[repo.repository.name]
+                                                ? 'Claimed'
+                                                : 'Claim Reward'}
                                         </button>
                                     </div>
                                 </div>
