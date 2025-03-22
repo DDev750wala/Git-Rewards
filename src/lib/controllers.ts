@@ -119,7 +119,7 @@ export async function handleIssueCommentEvent(payload: IssueComment) {
                     repositoryId: repository.id,
                     prNumber: payload.issue.number,
                     amountUsd: 0,
-                    amountEth,
+                    amountEth: amountEth * 10 ** 18,
                 },
             })
 

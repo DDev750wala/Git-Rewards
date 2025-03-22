@@ -131,15 +131,13 @@ export default function Dashboard() {
 
             if (contract) {
                 if (typeof contract.addAmount === 'function') {
-                    const tx = await contract.addAmount(
-                        userAddress, 
-                        repoName,
-                        {
-                            value: ethers.parseEther(amount.toString()),
-                        }
-                    )
+                    const tx = await contract.addAmount(userAddress, repoName, {
+                        value: ethers.parseEther(amount.toString()),
+                    })
                 } else {
-                    console.error('addAmount function is not defined on the contract')
+                    console.error(
+                        'addAmount function is not defined on the contract'
+                    )
                 }
             }
             fetchData()
@@ -149,14 +147,14 @@ export default function Dashboard() {
     }
 
     const disconnectWallet = () => {
-        setWalletAddress(null);
-        Cookies.remove('walletAddress');
-    };
+        setWalletAddress(null)
+        Cookies.remove('walletAddress')
+    }
 
     const connectWallet = async () => {
         if (walletAddress) {
-            disconnectWallet();
-            return;
+            disconnectWallet()
+            return
         }
 
         if (!window.ethereum) {
@@ -293,9 +291,9 @@ export default function Dashboard() {
                 onClick={connectWallet}
                 className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer"
             >
-                {walletAddress ? "Disconnect" : "Connect Wallet"}
-                
-            {/* > */}
+                {walletAddress ? 'Disconnect' : 'Connect Wallet'}
+
+                {/* > */}
                 {/* Connect Wallet */}
             </button>
             {walletAddress && (
@@ -305,20 +303,22 @@ export default function Dashboard() {
             )}
 
             <div className="p-[2px] rounded-lg bg-[url('/image1.png')] bg-cover bg-center mb-6">
-            <div className='flex justify-between  items-center p-2'>
-                <h1 className="text-2xl p-3 font-bold">My Repos</h1>
-                <span className=''><InstallPage/></span>
+                <div className="flex justify-between  items-center p-2">
+                    <h1 className="text-2xl p-3 font-bold">My Repos</h1>
+                    <span className="">
+                        <InstallPage />
+                    </span>
                 </div>
                 <div className="w-fullmax-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mx-auto border border-[#2a3441] rounded-lg overflow-hidden bg-black">
                     <div className="h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                         {loading ? (
-                            <Skeleton 
-                            baseColor="#1A1A1A" 
-                            highlightColor="#333" 
-                            count={5} 
-                            height={60} 
-                            className="rounded-lg my-2 animate-pulse"
-                        />
+                            <Skeleton
+                                baseColor="#1A1A1A"
+                                highlightColor="#333"
+                                count={5}
+                                height={60}
+                                className="rounded-lg my-2 animate-pulse"
+                            />
                         ) : (
                             repos.map((repo) => (
                                 <div
@@ -391,36 +391,37 @@ export default function Dashboard() {
                 //             >
                 //                 Confirm
                 //             </button>
-                    <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
-                        <div className="bg-[#1E1E1E] p-6 rounded-lg shadow-xl w-[90%] max-w-md border border-gray-700 transform scale-100 transition-transform duration-300">
-                            <h2 className="text-white text-lg font-semibold mb-4 text-center">
-                                Set Reward for{' '}
-                                <span className="text-blue-400">
-                                    {selectedRepo}
-                                </span>
-                            </h2>
-                            <input
-                                type="number"
-                                placeholder="10ETH"
-                                className="w-full p-3 rounded-lg border border-gray-600 bg-[#0D1117] text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                value={rewardInput}
-                                onChange={(e) => setRewardInput(e.target.value)}
-                            />
-                            <div className="flex justify-end mt-6 gap-3">
+                <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
+                    <div className="bg-[#1E1E1E] p-6 rounded-lg shadow-xl w-[90%] max-w-md border border-gray-700 transform scale-100 transition-transform duration-300">
+                        <h2 className="text-white text-lg font-semibold mb-4 text-center">
+                            Set Reward for{' '}
+                            <span className="text-blue-400">
+                                {selectedRepo}
+                            </span>
+                        </h2>
+                        <input
+                            type="number"
+                            placeholder="10ETH"
+                            className="w-full p-3 rounded-lg border border-gray-600 bg-[#0D1117] text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            value={rewardInput}
+                            onChange={(e) => setRewardInput(e.target.value)}
+                        />
+                        <div className="flex justify-end mt-6 gap-3">
                             <button
                                 onClick={() => setShowPopup(false)}
-                                        className="px-4 cursor-pointer py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all">
-                                                Cancel
+                                className="px-4 cursor-pointer py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
+                            >
+                                Cancel
                             </button>
-                                <button
-                                    onClick={handleConfirmReward}
-                                    className="px-5 cursor-pointer py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all"
-                                >
-                                    Confirm
-                                </button>
-                            </div>
+                            <button
+                                onClick={handleConfirmReward}
+                                className="px-5 cursor-pointer py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                                Confirm
+                            </button>
                         </div>
                     </div>
+                </div>
             )}
         </div>
     )
