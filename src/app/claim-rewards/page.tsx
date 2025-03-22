@@ -222,6 +222,9 @@ export default function Claim() {
                     animateBy="words"
                     direction="top"
                     className="text-6xl mb-8"
+                    animationFrom="opacity-0"
+                    animationTo="opacity-100"
+                    onAnimationComplete={() => console.log('Animation Complete')}
                 />
             </h1>
 

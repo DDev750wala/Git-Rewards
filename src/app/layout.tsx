@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/navbar";
 import Background from "@/components/background";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -28,6 +29,7 @@ export default function RootLayout({
           {children}
           <SpeedInsights />
           {/* </TRPCReactProvider> */}
+          <Footer/>
         </body>
       </html>
     </ClerkProvider>
